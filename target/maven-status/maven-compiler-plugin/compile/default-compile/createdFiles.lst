@@ -1,4 +1,6 @@
 com\batterteam\main\batterStatsApp.class
-com\batterteam\main\Batter.class
+com\batterteam\classes\BatterAppDB.class
 module-info.class
+com\batterteam\classes\Batter.class
+com\batterteam\classes\Console.class
 com\batterteam\main\SystemInfo.class

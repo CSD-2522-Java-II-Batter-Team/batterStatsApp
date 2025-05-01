@@ -2,7 +2,7 @@
  * Author Name: Batter Team
  * Date: 4/25/25
  * File Name: batterStatsApp.java
- * Last Update: Lillian H. - 4/29/25
+ * Last Update: Seth I. - 4/30/25
  * Program Description: Main file AND GUI for batterStatsApp.
  */
 
@@ -11,6 +11,7 @@
 Seth I. - 4/25/25 - created main file structure for team to add onto. The below code is an example javaFX code provided by NetBeans
 Lillian H. - 4/27/25 - added basic GUI structure created with Tiffany W
 Lillian H. - 4/29/25 - added finished GUI layout, minus the scene for viewing reports and logic for submitting stats
+Seth I. - 4/30/25 - Added import statement for classes package.
 ======================================
  */
 
@@ -35,6 +36,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.Font;
+import com.batterteam.classes.*;
 
 
 /**
@@ -119,6 +121,16 @@ public class batterStatsApp extends Application {
         // Switch to data entry scene
         enterStatsBtn.setOnAction(e -> {
             switchScenes(entryScene);
+        });
+        
+        // !!!!!!!!!!!!!!!!  THIS IS ONLY FOR AN EXAMPLE  !!!!!!!!!!!!!!!!
+        // Call viewStats from the BatterStats class when "View Game Report" is clicked
+        viewGameReportBtn.setOnAction(e -> {
+            // For demonstration purposes, we'll hardcode the names here.
+            // In a real application, you'd get these from user input (perhaps in a new scene).
+            String firstNameToView = "Luca"; // Replace with actual first name input
+            String lastNameToView = "Trigiana";   // Replace with actual last name input
+            BatterAppDB.viewStats(firstNameToView, lastNameToView);
         });
         
         // Show an information alert 

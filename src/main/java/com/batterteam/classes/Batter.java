@@ -1,21 +1,22 @@
 /**
- * Author Name: James F.
+ * Author Name: Batter Team
  * Date: 4/22/25
  * File Name: Batter.java
- * Last Update: 4/22/25 by James F.
+ * Last Update: 4/30/25 by Seth I.
  * Program Description: Class that contains methods and information for a batter.
  */
 
 /*
 ============= CHANGE LOG =============
 James F. - 4/22/25 - added variables, constructors, and gets/sets.
-Seth I. - 4/29/25 - Test Comment
+Seth I. - 4/30/25 - Updated package from com.batterteam.main to com.batterteam.classes;
+Seth I. - 4/30/25 - Added variables and an associated constructor based on database variables - STILL NEED TO ADD GETTERS/SETTERS
 
 
 ======================================
  */
 
-package com.batterteam.main;
+package com.batterteam.classes;
 
 public class Batter {
     // variables
@@ -29,6 +30,20 @@ public class Batter {
     int runsBattedIn;
     double battingAverage;
     
+    // ADDED VARIABLES - Seth I 4/30/25
+    String playerFirstName;
+    String playerLastName;
+    int runs;
+    int doubles;
+    int triples;
+    int totalBases;
+    int basesOnBalls;
+    int sacrificFly;
+    int sacrificBunt;
+    int hitByPitch;
+    int leftOnBase;
+    int stolenBaseAttempts;
+    int homePlate;
     
     // constructors
     public Batter(String name) {
@@ -51,6 +66,29 @@ public class Batter {
         strikeOuts = so;
         walks = wk;
         runsBattedIn = rbi;
+        updateBattingAverage();
+    }
+    public Batter(String firstName, String lastName, String team, int ab, int h, int hr, int so, int rbi, int runAmount, int doublesAmount, int triplesAmount,
+                    int tb, int bob, int sf, int sb, int hbp, int lob, int sb_att, int hp) {
+        playerFirstName = firstName;
+        playerLastName = lastName;
+        teamName = team;
+        atBats = ab;
+        hits = h;
+        homeRuns = hr;
+        strikeOuts = so;
+        runsBattedIn = rbi;
+        runs = runAmount;
+        doubles = doublesAmount;
+        triples = triplesAmount;
+        totalBases = tb;
+        basesOnBalls = bob;
+        sacrificFly = sf;
+        sacrificBunt = sb;
+        hitByPitch = hbp;
+        leftOnBase = lob;
+        stolenBaseAttempts = sb_att;
+        homePlate = hp;
         updateBattingAverage();
     }
     
