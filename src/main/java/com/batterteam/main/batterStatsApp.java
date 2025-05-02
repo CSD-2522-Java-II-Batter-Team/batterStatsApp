@@ -2,7 +2,7 @@
  * Author Name: Batter Team
  * Date: 4/25/25
  * File Name: batterStatsApp.java
- * Last Update: Seth I. - 4/30/25
+ * Last Update: Lillian H. - 5/1/25
  * Program Description: Main file AND GUI for batterStatsApp.
  */
 
@@ -12,6 +12,7 @@ Seth I. - 4/25/25 - created main file structure for team to add onto. The below 
 Lillian H. - 4/27/25 - added basic GUI structure created with Tiffany W
 Lillian H. - 4/29/25 - added finished GUI layout, minus the scene for viewing reports and logic for submitting stats
 Seth I. - 4/30/25 - Added import statement for classes package.
+Lillian H. - 5/1/2024 - Implemented Tiffany W's report scene layout and made a few modifications to GUI
 ======================================
  */
 
@@ -37,6 +38,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.Font;
 import com.batterteam.classes.*;
+import java.time.LocalDate;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.ToggleGroup;
 
 
 /**
@@ -47,6 +51,7 @@ public class batterStatsApp extends Application {
     private Stage stage;
     private Scene menuScene;
     private Scene entryScene;
+    private Scene reportScene;
 
     private TextField firstNameField = new TextField();
     private TextField lastNameField = new TextField();
@@ -72,6 +77,8 @@ public class batterStatsApp extends Application {
     private TextField stolenBasesField = new TextField();
     private TextField homePlatesField = new TextField();
     private ComboBox<String> stateCombo = new ComboBox<>();
+    TextField reportFNameField = new TextField();
+    TextField reportLNameField = new TextField();
     
     @Override
     public void start(Stage primaryStage) {
@@ -80,6 +87,7 @@ public class batterStatsApp extends Application {
 
         menuScene = createMenuScene();
         entryScene = createEntryScene();
+        reportScene = createReportScene();
 
         stage.setScene(menuScene);
         stage.show();
@@ -137,6 +145,10 @@ public class batterStatsApp extends Application {
         // Show an information alert 
         helpBtn.setOnAction(e -> showHelpAlert());
 
+        // Show report scene
+        viewGameReportBtn.setOnAction(e -> switchScenes(reportScene));
+        viewCumulativeReportBtn.setOnAction(e -> switchScenes(reportScene));
+        
         // Scene Setup
         return new Scene(menuBox, 400, 300);
     }
@@ -146,7 +158,7 @@ public class batterStatsApp extends Application {
         // Title
         Text title = new Text("Enter Batter Stats");
         title.setFont(Font.font("Arial", 24));
-
+        
         // Buttons
         Button exitBtn = new Button("Exit");
         Button resetBtn = new Button("Reset Stats");
@@ -164,6 +176,11 @@ public class batterStatsApp extends Application {
         grid.setVgap(10);
         grid.add(buttonBox, 0, 15, 4, 1);
 
+        // Instructions
+        Label instructionLabel = new Label("Enter a positive integer for the fields below:");
+        HBox instructionBox = new HBox(instructionLabel);
+        grid.add(instructionBox, 0, 5, 4, 1);
+        
         // Labels
         grid.add(new Label("First Name:"), 0, 1);
         grid.add(new Label("Last Name:"), 0, 2);
@@ -305,5 +322,134 @@ public class batterStatsApp extends Application {
         leftOnBasesField.setMaxSize(50, 50);
         stolenBasesField.setMaxSize(50, 50);
         homePlatesField.setMaxSize(50, 50);
+    }
+    
+    public Scene createReportScene() {
+        Label titleLabel = new Label("Cumulative Player Stats");
+
+        // First and Last name text fields
+        reportFNameField.setPromptText("First Name");
+        reportLNameField.setPromptText("Last Name");
+        
+        HBox nameBox = new HBox(10, reportFNameField, reportLNameField);
+        nameBox.setAlignment(Pos.CENTER);
+
+        // Radio buttons for single or multiple games
+        RadioButton singleGameRadio = new RadioButton("Single Game");
+        RadioButton multipleGamesRadio = new RadioButton("Multiple Games");
+        ToggleGroup group = new ToggleGroup();
+        singleGameRadio.setToggleGroup(group);
+        multipleGamesRadio.setToggleGroup(group);
+        singleGameRadio.setSelected(true);
+
+        HBox radioBox = new HBox(20, singleGameRadio, multipleGamesRadio);
+        radioBox.setAlignment(Pos.CENTER);
+
+        // Date pickers
+        DatePicker singleGameDate = new DatePicker();
+        DatePicker startDate = new DatePicker();
+        DatePicker endDate = new DatePicker();
+        HBox multiDateBox = new HBox(10, startDate, endDate);
+        multiDateBox.setAlignment(Pos.CENTER);
+        multiDateBox.setVisible(false);
+
+        // Hide multiple-date pickers by default
+        multiDateBox.setVisible(false);
+
+        // Visibility based on selection
+        singleGameRadio.setOnAction(e -> {
+            singleGameDate.setVisible(true);
+            multiDateBox.setVisible(false);
+        });
+
+        multipleGamesRadio.setOnAction(e -> {
+            singleGameDate.setVisible(false);
+            multiDateBox.setVisible(true);
+        });
+
+        // Buttons
+        Button viewReportButton = new Button("View Report");
+        Button backButton = new Button("Back");
+        
+        // Error message if full name is not entered
+        viewReportButton.setOnAction(e -> {
+            String first = reportFNameField.getText().trim();
+            String last = reportLNameField.getText().trim();
+
+            if (first.isEmpty() || last.isEmpty()) {
+                showAlert("Enter both first and last name.");
+                return;
+            }
+
+            String message;
+
+            // Error message if date is not selected
+            if (singleGameRadio.isSelected()) {
+                LocalDate date = singleGameDate.getValue();
+                if (date == null) {
+                    showAlert("Select a game date.");
+                    return;
+                }
+
+                //Format for report
+                if (first.equalsIgnoreCase("Test") && last.equalsIgnoreCase("Player")) {
+                    message = "Showing stats for " + first + " " + last +
+                              "\nGame Date: " + date +
+                              "\nHits: 2, AVG: .400";
+                } else {
+                    message = "No stats found for " + first + " " + last + " on " + date + ".";
+                }
+            } else {
+                LocalDate start = startDate.getValue();
+                LocalDate end = endDate.getValue();
+                if (start == null || end == null) {
+                    showAlert("Select a start and end date.");
+                    return;
+                }
+
+                // Testing report pop-up
+                if (first.equalsIgnoreCase("Test") && last.equalsIgnoreCase("Player")) {
+                    message = "Cumulative stats for " + first + " " + last +
+                              "\nFrom " + start + " to " + end +
+                              "\nHits: 12, AVG: .375";
+                } else {
+                    message = "No stats found for " + first + " " + last +
+                              " between " + start + " and " + end + ".";
+                }
+            }
+
+            // Show the message in a popup window
+            Alert popup = new Alert(Alert.AlertType.INFORMATION);
+            popup.setTitle("Player Report");
+            popup.setHeaderText(null);
+            popup.setContentText(message);
+            popup.showAndWait();
+        });
+
+
+        backButton.setOnAction(e -> stage.setScene(menuScene));
+
+        // Page layout
+        VBox layout = new VBox(10);
+        layout.setPadding(new Insets(20));
+        layout.setAlignment(Pos.CENTER);
+        layout.getChildren().addAll(
+            titleLabel,
+            nameBox,
+            radioBox,
+            singleGameDate,
+            multiDateBox,
+            viewReportButton,
+            backButton
+        );
+
+        // Screen size
+        return new Scene(layout, 400, 400);
+    }
+
+    private static void showAlert(String msg) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setContentText(msg);
+        alert.showAndWait();
     }
 }
