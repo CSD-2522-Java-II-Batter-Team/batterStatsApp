@@ -1,11 +1,11 @@
-package BatterApp;
-
 /**
  * Author: Batter Team
  * Date: 4/30/2025
  * Last Updated By: Tiffany W.
  * 
  */
+
+package com.batterteam.main;
 
 import javafx.scene.Scene;
 import javafx.scene.control.*;
