@@ -1,8 +1,16 @@
 /**
  * Author: Batter Team
  * Date: 4/30/2025
+ * File Name: CumulativeReport.java
  * Last Updated By: Tiffany W.
- * 
+ * Program Description: 
+ */
+
+/*
+============= CHANGE LOG =============
+
+
+======================================
  */
 
 package com.batterteam.main;

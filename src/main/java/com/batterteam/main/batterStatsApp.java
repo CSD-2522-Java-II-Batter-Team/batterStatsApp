@@ -130,7 +130,8 @@ public class batterStatsApp extends Application {
             // In a real application, you'd get these from user input (perhaps in a new scene).
             String firstNameToView = "Luca"; // Replace with actual first name input
             String lastNameToView = "Trigiana";   // Replace with actual last name input
-            BatterAppDB.viewStats(firstNameToView, lastNameToView);
+            String dateToView = "2020-02-14";   // Replace with actual last name input
+            BatterAppDB.viewStatsSingleGame(firstNameToView, lastNameToView, dateToView);
         });
         
         // Show an information alert 

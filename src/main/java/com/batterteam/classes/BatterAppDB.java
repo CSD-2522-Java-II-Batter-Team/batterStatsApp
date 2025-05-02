@@ -37,13 +37,17 @@ public class BatterAppDB {
     }
     
     // Function displays player's stats based off their first and last name
-    public static Batter buildBatterObjectFromDB(String firstName, String lastName) {
+    public static Batter buildBatterObjectFromDBSingleGame(String firstName, String lastName, String gameDate) {
         try (PreparedStatement preparedStatement = connectToDB().prepareStatement("SELECT * FROM `Players` JOIN `Teams` ON `Players`.`player_teamID` = `Teams`.`teamID`"
-                                                                                     + "WHERE `playerFirstName` = ? AND `playerLastName` = ?")) {
+                                                                                    + " JOIN `Game_Teams` ON `Teams`.`teamID` = `Game_Teams`.teamID"
+                                                                                    + " JOIN `Played_games` ON `Game_Teams`.`gameID` = `Played_games`.`gameID`"
+                                                                                     + " WHERE `playerFirstName` = ? AND `playerLastName` = ?"
+                                                                                        + " AND dateOfGame = ?")) {
 
             // Create prepared statement searching for player by last name
             preparedStatement.setString(1, firstName);
             preparedStatement.setString(2, lastName);
+            preparedStatement.setString(3, gameDate);
 
             // Initialize variables for object creation
             String playerTeam = "";
@@ -102,14 +106,18 @@ public class BatterAppDB {
         return null;
     }
     
-    // Function displays player's stats based off their first and last name
-    public static void viewStats(String firstName, String lastName) {
+    // Function displays player's stats based off their first and last name and date of game
+    public static void viewStatsSingleGame(String firstName, String lastName, String dateOfGame) {
         try (PreparedStatement preparedStatement = connectToDB().prepareStatement("SELECT * FROM `Players` JOIN `Teams` ON `Players`.`player_teamID` = `Teams`.`teamID`"
-                                                                                     + "WHERE `playerFirstName` = ? AND `playerLastName` = ?")) {
+                                                                                    + " JOIN `Game_Teams` ON `Teams`.`teamID` = `Game_Teams`.teamID"
+                                                                                    + " JOIN `Played_games` ON `Game_Teams`.`gameID` = `Played_games`.`gameID`"
+                                                                                     + " WHERE `playerFirstName` = ? AND `playerLastName` = ?"
+                                                                                        + " AND dateOfGame = ?")) {
 
             // Create prepared statement searching for player by last name
             preparedStatement.setString(1, firstName);
             preparedStatement.setString(2, lastName);
+            preparedStatement.setString(3, dateOfGame);
 
             // Execute search query
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
