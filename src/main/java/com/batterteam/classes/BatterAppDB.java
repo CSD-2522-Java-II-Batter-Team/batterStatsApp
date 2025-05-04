@@ -2,13 +2,13 @@
  * Author Name: Batter Team
  * Date: 4/30/25
  * File Name: BatterAppDB.java
- * Last Update: 4/30/25 by Seth I.
+ * Last Update: 5/03/25 by Seth I.
  * Program Description: Class that contains methods to manipulate a SQlite database as well as connect to it.
  */
 
 /*
 ============= CHANGE LOG =============
-
+5/03/25 - Seth I. - After updating database file I updated methods buildBatterObjectFromDBSingleGame AND viewStatsSingleGame to reflect db change
 
 
 ======================================
@@ -37,17 +37,25 @@ public class BatterAppDB {
     }
     
     // Function displays player's stats based off their first and last name
-    public static Batter buildBatterObjectFromDBSingleGame(String firstName, String lastName, String gameDate) {
-        try (PreparedStatement preparedStatement = connectToDB().prepareStatement("SELECT * FROM `Players` JOIN `Teams` ON `Players`.`player_teamID` = `Teams`.`teamID`"
-                                                                                    + " JOIN `Game_Teams` ON `Teams`.`teamID` = `Game_Teams`.teamID"
-                                                                                    + " JOIN `Played_games` ON `Game_Teams`.`gameID` = `Played_games`.`gameID`"
-                                                                                     + " WHERE `playerFirstName` = ? AND `playerLastName` = ?"
-                                                                                        + " AND dateOfGame = ?")) {
+    public static Batter buildBatterObjectFromDBSingleGame(String firstName, String lastName, String gameDate, String teamName) {
+        
+        String queryAsString = "SELECT P.playerFirstName, P.playerLastName, T.teamName, PPGS.playerPosition, PPGS.atBatAmount, PPGS.runsAmount," + 
+                                    " PPGS.hitsAmount, PPGS.runsBattedInAmount, PPGS.doubleAmount, PPGS.tripleAmount, PPGS.homeRunAmount," +
+                                    " PPGS.totalBasesAmount, PPGS.strikeOutAmount, PPGS.baseOnBallsAmount, PPGS.sacrificFlyAmount," +
+                                    " PPGS.sacrificBuntAmount, PPGS.hitByPitchAmount, PPGS.leftOnBaseAmount, PPGS.stolenBaseAttemptAmount, PPGS.homePlateAmount" +
+                                " FROM `Players` P JOIN `Player_Per_Game_Stats` PPGS ON P.`playerID` = PPGS.`playerID`" + 
+                                    " JOIN `Played_Games` PG ON PPGS.`gameID` = PG.gameID" +
+                                    " JOIN `Game_Teams` GT ON PG.`gameID` = GT.`gameID`" + 
+                                    " JOIN `Teams` T ON GT.`teamID` = T.`teamID`" +
+                               	" WHERE P.`playerFirstName` = ? AND P.`playerLastName` = ? AND PG.dateOfGame = ? AND T.`teamName` = ?;";
+        
+        try (PreparedStatement preparedStatement = connectToDB().prepareStatement(queryAsString)) {
 
             // Create prepared statement searching for player by last name
             preparedStatement.setString(1, firstName);
             preparedStatement.setString(2, lastName);
             preparedStatement.setString(3, gameDate);
+            preparedStatement.setString(4, teamName);
 
             // Initialize variables for object creation
             String playerTeam = "";
@@ -106,18 +114,26 @@ public class BatterAppDB {
         return null;
     }
     
-    // Function displays player's stats based off their first and last name and date of game
-    public static void viewStatsSingleGame(String firstName, String lastName, String dateOfGame) {
-        try (PreparedStatement preparedStatement = connectToDB().prepareStatement("SELECT * FROM `Players` JOIN `Teams` ON `Players`.`player_teamID` = `Teams`.`teamID`"
-                                                                                    + " JOIN `Game_Teams` ON `Teams`.`teamID` = `Game_Teams`.teamID"
-                                                                                    + " JOIN `Played_games` ON `Game_Teams`.`gameID` = `Played_games`.`gameID`"
-                                                                                     + " WHERE `playerFirstName` = ? AND `playerLastName` = ?"
-                                                                                        + " AND dateOfGame = ?")) {
+    // Function displays player's stats based off their first and last name, date of game, and team name
+    public static void viewStatsSingleGame(String firstName, String lastName, String dateOfGame, String teamName) {
+        
+        String queryAsString = "SELECT P.playerFirstName, P.playerLastName, T.teamName, PPGS.playerPosition, PPGS.atBatAmount, PPGS.runsAmount," + 
+                                    " PPGS.hitsAmount, PPGS.runsBattedInAmount, PPGS.doubleAmount, PPGS.tripleAmount, PPGS.homeRunAmount," +
+                                    " PPGS.totalBasesAmount, PPGS.strikeOutAmount, PPGS.baseOnBallsAmount, PPGS.sacrificFlyAmount," +
+                                    " PPGS.sacrificBuntAmount, PPGS.hitByPitchAmount, PPGS.leftOnBaseAmount, PPGS.stolenBaseAttemptAmount, PPGS.homePlateAmount" +
+                                " FROM `Players` P JOIN `Player_Per_Game_Stats` PPGS ON P.`playerID` = PPGS.`playerID`" + 
+                                    " JOIN `Played_Games` PG ON PPGS.`gameID` = PG.gameID" +
+                                    " JOIN `Game_Teams` GT ON PG.`gameID` = GT.`gameID`" + 
+                                    " JOIN `Teams` T ON GT.`teamID` = T.`teamID`" +
+                               	" WHERE P.`playerFirstName` = ? AND P.`playerLastName` = ? AND PG.dateOfGame = ? AND T.`teamName` = ?;";
+        
+        try (PreparedStatement preparedStatement = connectToDB().prepareStatement(queryAsString)) {
 
             // Create prepared statement searching for player by last name
             preparedStatement.setString(1, firstName);
             preparedStatement.setString(2, lastName);
             preparedStatement.setString(3, dateOfGame);
+            preparedStatement.setString(4, teamName);
 
             // Execute search query
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -127,12 +143,12 @@ public class BatterAppDB {
                     Console.println("First Name: " + resultSet.getString("playerFirstName"));
                     Console.println("Last Name: " + resultSet.getString("playerLastName"));
                     Console.println("Team: " + resultSet.getString("teamName"));
+                    Console.println("Played Position: " + resultSet.getString("playerPosition"));
                     Console.println("AB: " + resultSet.getInt("atBatAmount"));
                     Console.println("R: " + resultSet.getInt("runsAmount"));
                     Console.println("H: " + resultSet.getInt("hitsAmount"));
                     Console.println("RBI: " + resultSet.getInt("runsBattedInAmount"));
                     Console.println("2B: " + resultSet.getInt("doubleAmount"));
-                    Console.println("3B: " + resultSet.getInt("tripleAmount"));
                     Console.println("3B: " + resultSet.getInt("tripleAmount"));
                     Console.println("HR: " + resultSet.getInt("homeRunAmount"));
                     Console.println("TB: " + resultSet.getInt("totalBasesAmount"));       
