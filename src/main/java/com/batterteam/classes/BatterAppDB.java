@@ -9,7 +9,7 @@
 /*
 ============= CHANGE LOG =============
 5/03/25 - Seth I. - After updating database file I updated methods buildBatterObjectFromDBSingleGame AND viewStatsSingleGame to reflect db change
-
+5/04/25 - Seth I. - Added several methods to display, add, and update information from database. 
 
 ======================================
  */
@@ -17,6 +17,7 @@
 package com.batterteam.classes;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 public class BatterAppDB {
 
@@ -36,13 +37,14 @@ public class BatterAppDB {
         }  
     }
     
-    // Function displays player's stats based off their first and last name
+    // Function saves a batter object based on the batters first and last name, date of game played, and the team they're on
     public static Batter buildBatterObjectFromDBSingleGame(String firstName, String lastName, String gameDate, String teamName) {
         
         String queryAsString = "SELECT P.playerFirstName, P.playerLastName, T.teamName, PPGS.playerPosition, PPGS.atBatAmount, PPGS.runsAmount," + 
                                     " PPGS.hitsAmount, PPGS.runsBattedInAmount, PPGS.doubleAmount, PPGS.tripleAmount, PPGS.homeRunAmount," +
                                     " PPGS.totalBasesAmount, PPGS.strikeOutAmount, PPGS.baseOnBallsAmount, PPGS.sacrificFlyAmount," +
-                                    " PPGS.sacrificBuntAmount, PPGS.hitByPitchAmount, PPGS.leftOnBaseAmount, PPGS.stolenBaseAttemptAmount, PPGS.homePlateAmount" +
+                                    " PPGS.sacrificBuntAmount, PPGS.hitByPitchAmount, PPGS.leftOnBaseAmount, PPGS.stolenBaseAttemptAmount, PPGS.homePlateAmount," +
+                                    " PG.dateOfGame" +
                                 " FROM `Players` P JOIN `Player_Per_Game_Stats` PPGS ON P.`playerID` = PPGS.`playerID`" + 
                                     " JOIN `Played_Games` PG ON PPGS.`gameID` = PG.gameID" +
                                     " JOIN `Game_Teams` GT ON PG.`gameID` = GT.`gameID`" + 
@@ -59,6 +61,8 @@ public class BatterAppDB {
 
             // Initialize variables for object creation
             String playerTeam = "";
+            String playerPosition = "";
+            String playedGameDate = "";
             int playerAB = 0;
             int playerRuns = 0;
             int playerHits = 0;
@@ -82,6 +86,8 @@ public class BatterAppDB {
                 // Process all rows of queried data until end of file - display as a black
                 while (resultSet.next()) {
                     playerTeam = resultSet.getString("teamName");
+                    playerPosition = resultSet.getString("playerPosition");
+                    playedGameDate = resultSet.getString("dateOfGame");
                     playerAB = resultSet.getInt("atBatAmount");
                     playerRuns = resultSet.getInt("runsAmount");
                     playerHits = resultSet.getInt("hitsAmount");
@@ -100,10 +106,97 @@ public class BatterAppDB {
                     playerHomePlate = resultSet.getInt("homePlateAmount"); 
                 }
                 
-                Batter b = new Batter(firstName, lastName, playerTeam, playerAB, playerHits, playerHomeRuns, playerStrikeOut, playerRunsBattedIn, playerRuns,
+                Batter b = new Batter(firstName, lastName, playerTeam, playerPosition, playedGameDate, playerAB, playerHits, playerHomeRuns, playerStrikeOut, playerRunsBattedIn, playerRuns,
                                         playerDoubles, playerTriples, playerTotalBases, playerBaseOnBalls, playerSacrificFly, playerSacrificBunt, 
                                             playerHitByPitch, playerLeftOnBase, playerStolenBaseAttempts, playerHomePlate);
                 return b;
+                
+            } catch (SQLException e) {
+                System.out.println(e);
+            }
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+        return null;
+    }
+    
+    // Function saves a batter object based on the batters first and last name, date of game played, and the team they're on
+    public static ArrayList buildBatterObjectFromDBMultiGame(String firstName, String lastName, String firstGameDate, String lastGameDate, String teamName) {
+        
+        String queryAsString = "SELECT P.playerFirstName, P.playerLastName, T.teamName, PPGS.playerPosition, PPGS.atBatAmount, PPGS.runsAmount," + 
+                                    " PPGS.hitsAmount, PPGS.runsBattedInAmount, PPGS.doubleAmount, PPGS.tripleAmount, PPGS.homeRunAmount," +
+                                    " PPGS.totalBasesAmount, PPGS.strikeOutAmount, PPGS.baseOnBallsAmount, PPGS.sacrificFlyAmount," +
+                                    " PPGS.sacrificBuntAmount, PPGS.hitByPitchAmount, PPGS.leftOnBaseAmount, PPGS.stolenBaseAttemptAmount, PPGS.homePlateAmount," +
+                                    " PG.dateOfGame" +
+                                " FROM `Players` P JOIN `Player_Per_Game_Stats` PPGS ON P.`playerID` = PPGS.`playerID`" + 
+                                    " JOIN `Played_Games` PG ON PPGS.`gameID` = PG.gameID" +
+                                    " JOIN `Game_Teams` GT ON PG.`gameID` = GT.`gameID`" + 
+                                    " JOIN `Teams` T ON GT.`teamID` = T.`teamID`" +
+                               	" WHERE P.`playerFirstName` = ? AND P.`playerLastName` = ? AND (PG.dateOfGame BETWEEN ? AND ?) AND T.`teamName` = ?;";
+        
+        ArrayList batterMultiGameStats = new ArrayList<Batter>();
+                
+        try (PreparedStatement preparedStatement = connectToDB().prepareStatement(queryAsString)) {
+
+            // Create prepared statement searching for player by last name
+            preparedStatement.setString(1, firstName);
+            preparedStatement.setString(2, lastName);
+            preparedStatement.setString(3, firstGameDate);
+            preparedStatement.setString(4, lastGameDate);
+            preparedStatement.setString(5, teamName);
+
+            // Initialize variables for object creation
+            String playerTeam = "";
+            String playerPosition = "";
+            String playedGameDate = "";
+            int playerAB = 0;
+            int playerRuns = 0;
+            int playerHits = 0;
+            int playerRunsBattedIn = 0;
+            int playerDoubles = 0;
+            int playerTriples = 0;
+            int playerHomeRuns = 0;
+            int playerTotalBases = 0;
+            int playerStrikeOut = 0;
+            int playerBaseOnBalls = 0;
+            int playerSacrificFly = 0;
+            int playerSacrificBunt = 0;
+            int playerHitByPitch = 0;
+            int playerLeftOnBase = 0;
+            int playerStolenBaseAttempts = 0;
+            int playerHomePlate = 0;
+                           
+            // Execute search query
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                // Process all rows of queried data until end of file - display as a black
+                while (resultSet.next()) {
+                    playerTeam = resultSet.getString("teamName");
+                    playerPosition = resultSet.getString("playerPosition");
+                    playedGameDate = resultSet.getString("dateOfGame");
+                    playerAB = resultSet.getInt("atBatAmount");
+                    playerRuns = resultSet.getInt("runsAmount");
+                    playerHits = resultSet.getInt("hitsAmount");
+                    playerRunsBattedIn = resultSet.getInt("runsBattedInAmount");
+                    playerDoubles = resultSet.getInt("doubleAmount");
+                    playerTriples = resultSet.getInt("tripleAmount");
+                    playerHomeRuns = resultSet.getInt("homeRunAmount");
+                    playerTotalBases = resultSet.getInt("totalBasesAmount");       
+                    playerStrikeOut = resultSet.getInt("strikeOutAmount");
+                    playerBaseOnBalls = resultSet.getInt("baseOnBallsAmount"); 
+                    playerSacrificFly = resultSet.getInt("sacrificFlyAmount"); 
+                    playerSacrificBunt = resultSet.getInt("sacrificBuntAmount"); 
+                    playerHitByPitch = resultSet.getInt("hitByPitchAmount"); 
+                    playerLeftOnBase = resultSet.getInt("leftOnBaseAmount"); 
+                    playerStolenBaseAttempts = resultSet.getInt("stolenBaseAttemptAmount"); 
+                    playerHomePlate = resultSet.getInt("homePlateAmount"); 
+                    
+                    Batter b = new Batter(firstName, lastName, playerTeam, playerPosition, playedGameDate, playerAB, playerHits, playerHomeRuns, playerStrikeOut, playerRunsBattedIn, playerRuns,
+                                        playerDoubles, playerTriples, playerTotalBases, playerBaseOnBalls, playerSacrificFly, playerSacrificBunt, 
+                                            playerHitByPitch, playerLeftOnBase, playerStolenBaseAttempts, playerHomePlate);
+                    batterMultiGameStats.add(b);
+                }                
+                return batterMultiGameStats;
                 
             } catch (SQLException e) {
                 System.out.println(e);
@@ -120,7 +213,8 @@ public class BatterAppDB {
         String queryAsString = "SELECT P.playerFirstName, P.playerLastName, T.teamName, PPGS.playerPosition, PPGS.atBatAmount, PPGS.runsAmount," + 
                                     " PPGS.hitsAmount, PPGS.runsBattedInAmount, PPGS.doubleAmount, PPGS.tripleAmount, PPGS.homeRunAmount," +
                                     " PPGS.totalBasesAmount, PPGS.strikeOutAmount, PPGS.baseOnBallsAmount, PPGS.sacrificFlyAmount," +
-                                    " PPGS.sacrificBuntAmount, PPGS.hitByPitchAmount, PPGS.leftOnBaseAmount, PPGS.stolenBaseAttemptAmount, PPGS.homePlateAmount" +
+                                    " PPGS.sacrificBuntAmount, PPGS.hitByPitchAmount, PPGS.leftOnBaseAmount, PPGS.stolenBaseAttemptAmount, PPGS.homePlateAmount," +
+                                    " PG.dateOfGame" +
                                 " FROM `Players` P JOIN `Player_Per_Game_Stats` PPGS ON P.`playerID` = PPGS.`playerID`" + 
                                     " JOIN `Played_Games` PG ON PPGS.`gameID` = PG.gameID" +
                                     " JOIN `Game_Teams` GT ON PG.`gameID` = GT.`gameID`" + 
@@ -144,6 +238,7 @@ public class BatterAppDB {
                     Console.println("Last Name: " + resultSet.getString("playerLastName"));
                     Console.println("Team: " + resultSet.getString("teamName"));
                     Console.println("Played Position: " + resultSet.getString("playerPosition"));
+                    Console.println("Date of Game: " + resultSet.getString("dateOfGame"));
                     Console.println("AB: " + resultSet.getInt("atBatAmount"));
                     Console.println("R: " + resultSet.getInt("runsAmount"));
                     Console.println("H: " + resultSet.getInt("hitsAmount"));
@@ -171,6 +266,209 @@ public class BatterAppDB {
         }
     }
     
+    // Function adds a player to the database - returns the player's playerID
+    public static int addBatter(Batter b, String teamName) {
+        
+        int teamID = getTeamIDFromTeamName(teamName);
+        int newPlayerID = -1;
+
+        String addBatterQuery = "INSERT INTO Players (playerFirstName, playerLastName, player_teamID) VALUES (?, ?, ?);";
+        String getLastIDQuery = "SELECT last_insert_rowid();";
+
+        try (PreparedStatement insertStatement = connectToDB().prepareStatement(addBatterQuery);
+             PreparedStatement selectLastIDStatement = connectToDB().prepareStatement(getLastIDQuery)) {
+
+            insertStatement.setString(1, b.getPlayerFirstName());
+            insertStatement.setString(2, b.getPlayerLastName());
+            insertStatement.setInt(3, teamID);
+            insertStatement.executeUpdate();
+
+            try (ResultSet resultSet = selectLastIDStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    newPlayerID = resultSet.getInt(1);
+                } else {
+                    System.out.println("Error: Could not retrieve last inserted row ID.");
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+
+        return newPlayerID;
+    }
+    
+    // Function adds a team to the database - returns the team's teamID
+    public static int addTeam(String teamName, int teamWins, int teamLosses) {
+        
+        int newTeamID = -1;
+        
+        String addTeamQuery = "INSERT INTO Teams (teamName, teamWins, teamLosses) VALUES (?, ?, ?);";
+        String getLastIDQuery = "SELECT last_insert_rowid();";
+                                        
+        try (PreparedStatement insertStatement = connectToDB().prepareStatement(addTeamQuery);
+             PreparedStatement selectLastIDStatement = connectToDB().prepareStatement(getLastIDQuery)) {
+            
+            // Populate Insert Statement with Team Variables
+            insertStatement.setString(1, teamName);
+            insertStatement.setInt(2, teamWins);
+            insertStatement.setInt(3, teamLosses);
+            insertStatement.executeUpdate();
+                     
+            // Locate the row/id of the newely created team
+            try (ResultSet resultSet = selectLastIDStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    newTeamID = resultSet.getInt(1);
+                } else {
+                    System.out.println("Error: Could not retrieve last inserted row ID.");
+                }
+            }
+     
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+        return newTeamID;
+    } 
+    
+    // Function adds a Played Game to the database
+    public static int addGame(String homeTeamName, String awayTeamName, String dateOfGame, String winningTeam, String venueCity, String venueState) {
+        
+        int newGameID = -1;
+        int teamID = getTeamIDFromTeamName(winningTeam); // Find teamID from based on team name - Value will be 999 if no team was found
+        
+        String addGameQuery = "INSERT INTO Played_Games (homeTeam, awayTeam, dateOfGame, winningTeam, venueCity, venueState)" + 
+                                " VALUES (?, ?, ?, ?, ?, ?);";
+        String getLastIDQuery = "SELECT last_insert_rowid();";
+                                        
+        try (PreparedStatement insertStatement = connectToDB().prepareStatement(addGameQuery);
+             PreparedStatement selectLastIDStatement = connectToDB().prepareStatement(getLastIDQuery)) {
+            
+            // Populate Insert Statement with Played Game Variables
+            insertStatement.setString(1, homeTeamName);
+            insertStatement.setString(2, awayTeamName);
+            insertStatement.setString(3, dateOfGame);
+            insertStatement.setInt(4, teamID);
+            insertStatement.setString(5, venueCity);
+            insertStatement.setString(6, venueState);
+            insertStatement.executeUpdate();
+            
+            // Locate the row/id of the newely created team
+            try (ResultSet resultSet = selectLastIDStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    newGameID = resultSet.getInt(1);
+                } else {
+                    System.out.println("Error: Could not retrieve last inserted row ID.");
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+        return newGameID;
+    } 
+    
+    // Function adds a player's stats for a game to the database
+    public static void addStatsPerGame(Batter b, int gameID) {
+        
+        String addStatsPerGameQuery = "INSERT INTO Player_Per_Game_Stats (playerID, gameID, playerPosition, atBatAmount, runsAmount. hitsAmount, runsBattedInAmount," +
+                                        " baseOnBallsAmount, strikeOutAmount, leftOnBaseAmount, assistsAmount, putOutAmount, homeRunAmount, hitByPitchAmount," +
+                                        " doubleAmount, tripleAmount, totalBasesAmount, homePlateAmount, onBasePercent, sacrificFlyAmount, sacrificBuntAmount, stolenBaseAttemptAmount)" +
+                                      " VALUES (?, ?, ?, ?, ?, ?, ?," +
+                                         " ?, ?, ?, 0, 0, ?, ?," +
+                                         " ?, ?, ?, ?, 0.0, ?, ?, ?);";
+        
+        try (PreparedStatement preparedStatement = connectToDB().prepareStatement(addStatsPerGameQuery)) {
+            
+            preparedStatement.setInt(1, b.getPlayerID());
+            preparedStatement.setInt(2, gameID);
+            preparedStatement.setString(3, b.getPlayerPosition());
+            preparedStatement.setInt(4, b.getAtBats());
+            preparedStatement.setInt(5, b.getRuns());
+            preparedStatement.setInt(6, b.getHits());
+            preparedStatement.setInt(7, b.getRBI());
+            preparedStatement.setInt(8, b.getBasesOnBalls());
+            preparedStatement.setInt(9, b.getStrikeOuts());
+            preparedStatement.setInt(10, b.getLeftOnBase());
+            preparedStatement.setInt(11, b.getHomeRuns());
+            preparedStatement.setInt(12, b.getHitByPitch());
+            preparedStatement.setInt(13, b.getDoubles());
+            preparedStatement.setInt(14, b.getTriples());
+            preparedStatement.setInt(15, b.getTotalBases());
+            preparedStatement.setInt(16, b.getHomePlate());
+            preparedStatement.setInt(17, b.getSacrificFly());
+            preparedStatement.setInt(18, b.getSacrificBunt());
+            preparedStatement.setInt(19, b.getStolenBaseAttempts());
+        
+            
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+    
+    }
+    
+    // Function updates database with player stats for a game based on a player's ID and a game's ID
+    public static void updateStats(int playerID, int gameID, String playerPosition, int atBatAmount, int runsAmount, int hitsAmount, int runsBattedInAmount, 
+                                        int baseOnBallsAmount, int strikeOutAmount, int leftOnBaseAmount, int assistsAmount, int putOutAmount, int homeRunAmount,
+                                            int hitByPitchAmount, int doubleAmount, int tripleAmount, int totalBasesAmount, int homePlateAmount, double onBasePercent,
+                                                int sacrificFlyAmount, int sacrificBuntAmount, int stolenBaseAttemptAmount) {
+        
+        String updateStatsQuery = "UPDATE Player_Per_Game_Stats" +
+                                    " SET playerPosition = ?," +
+                                    " atBatAmount = ?," +
+                                    " runsAmount = ?," +
+                                    " hitsAmount = ?," +
+                                    " runsBattedInAmount = ?," +
+                                    " baseOnBallsAmount = ?," +
+                                    " strikeOutAmount = ?," +
+                                    " leftOnBaseAmount = ?," +
+                                    " assistsAmount = ?," +
+                                    " putOutAmount = ?," +
+                                    " homeRunAmount = ?," +
+                                    " hitByPitchAmount = ?," +
+                                    " doubleAmount = ?," +
+                                    " tripleAmount = ?," +
+                                    " totalBasesAmount = ?," +
+                                    " homePlateAmount = ?," +
+                                    " onBasePercent = ?," +
+                                    " sacrificFlyAmount = ?," +
+                                    " sacrificBuntAmount = ?," +
+                                    " stolenBaseAttemptAmount = ?" +
+                                    " WHERE playerID = ? AND gameID = ?";                                      
+        
+        try (PreparedStatement preparedStatement = connectToDB().prepareStatement(updateStatsQuery)) {
+            
+            // Populate Insert Statement with Played Game Variables
+            preparedStatement.setString(1, playerPosition);
+            preparedStatement.setInt(2, atBatAmount);
+            preparedStatement.setInt(3, runsAmount);
+            preparedStatement.setInt(4, hitsAmount);
+            preparedStatement.setInt(5, runsBattedInAmount);
+            preparedStatement.setInt(6, baseOnBallsAmount);
+            preparedStatement.setInt(7, strikeOutAmount);
+            preparedStatement.setInt(8, leftOnBaseAmount);
+            preparedStatement.setInt(9, assistsAmount);
+            preparedStatement.setInt(10, putOutAmount);
+            preparedStatement.setInt(11, homeRunAmount);
+            preparedStatement.setInt(12, hitByPitchAmount);
+            preparedStatement.setInt(13, doubleAmount);
+            preparedStatement.setInt(14, tripleAmount);
+            preparedStatement.setInt(15, totalBasesAmount);
+            preparedStatement.setInt(16, homePlateAmount);
+            preparedStatement.setDouble(17, onBasePercent);
+            preparedStatement.setDouble(18, sacrificFlyAmount);
+            preparedStatement.setDouble(19, sacrificBuntAmount);
+            preparedStatement.setDouble(20, stolenBaseAttemptAmount);
+            preparedStatement.setInt(21, playerID);
+            preparedStatement.setInt(22, gameID);
+                        
+            // Run prepared statement
+            preparedStatement.executeUpdate();
+
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+    } 
+    
     // Returns a String of the team a player is on based on their assigned player_teamID
     public static String getTeamFromTeamID(int teamID) {
         try (PreparedStatement preparedStatement = connectToDB().prepareStatement("SELECT `teamName` FROM `Teams` WHERE `teamID` = ?")) {
@@ -194,4 +492,29 @@ public class BatterAppDB {
         return "TEAM NOT FOUND";
     }
     
+    // Returns the integer of the teamID a player is on based on a given team name
+    public static int getTeamIDFromTeamName(String teamName) {
+        try (PreparedStatement preparedStatement = connectToDB().prepareStatement("SELECT `teamID` FROM `Teams` WHERE `teamName` = ?")) {
+
+            // Create prepared statement searching for team by player_teamID
+            preparedStatement.setString(1, teamName);
+
+            // Execute search query
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                // Process row of queried data until end of file - display as a black
+                if (resultSet.next() == false) return 999;
+                else return resultSet.getInt("teamID");             
+                
+            } catch (SQLException e) {
+                System.out.println(e);
+            }
+        } catch (SQLException e) {
+            System.out.println(e);            
+        }
+        return 999;
+    }
+    
 }
+
+
