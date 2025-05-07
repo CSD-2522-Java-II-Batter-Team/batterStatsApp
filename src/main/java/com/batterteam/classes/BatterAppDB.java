@@ -10,6 +10,7 @@
 ============= CHANGE LOG =============
 5/03/25 - Seth I. - After updating database file I updated methods buildBatterObjectFromDBSingleGame AND viewStatsSingleGame to reflect db change
 5/04/25 - Seth I. - Added several methods to display, add, and update information from database. 
+5/06/25 - Seth I. - Added methods to retrieve gameIDs and dates
 
 ======================================
  */
@@ -38,7 +39,7 @@ public class BatterAppDB {
     }
     
     // Function saves a batter object based on the batters first and last name, date of game played, and the team they're on
-    public static Batter buildBatterObjectFromDBSingleGame(String firstName, String lastName, String gameDate, String teamName) {
+    public static Batter buildFullBatterObjectFromDBSingleGame(String firstName, String lastName, String gameDate, String teamName) {
         
         String queryAsString = "SELECT P.playerFirstName, P.playerLastName, T.teamName, PPGS.playerPosition, PPGS.atBatAmount, PPGS.runsAmount," + 
                                     " PPGS.hitsAmount, PPGS.runsBattedInAmount, PPGS.doubleAmount, PPGS.tripleAmount, PPGS.homeRunAmount," +
@@ -120,8 +121,9 @@ public class BatterAppDB {
         return null;
     }
     
-    // Function saves a batter object based on the batters first and last name, date of game played, and the team they're on
-    public static ArrayList buildBatterObjectFromDBMultiGame(String firstName, String lastName, String firstGameDate, String lastGameDate, String teamName) {
+    // Function saves an array of Batter objects with each Batter object contains stats of a singular batter from a singular game.
+    // EXAMPLE: If Babe Ruth played 10 games...this would return 10 Babe Ruth objects each with different stats per object. 
+    public static ArrayList buildFullBatterObjectsFromDBMultiGame(String firstName, String lastName, String firstGameDate, String lastGameDate, String teamName) {
         
         String queryAsString = "SELECT P.playerFirstName, P.playerLastName, T.teamName, PPGS.playerPosition, PPGS.atBatAmount, PPGS.runsAmount," + 
                                     " PPGS.hitsAmount, PPGS.runsBattedInAmount, PPGS.doubleAmount, PPGS.tripleAmount, PPGS.homeRunAmount," +
@@ -365,6 +367,60 @@ public class BatterAppDB {
             System.out.println(e);
         }
         return newGameID;
+    } 
+    
+    // Methods returns a String 
+    public static String getGameDateFromGameID(int gameID) {
+        
+        try (PreparedStatement preparedStatement = connectToDB().prepareStatement("SELECT `dateOfGame` FROM `Played_Games` WHERE `gameID` = ?")) {
+
+            // Create prepared statement searching for team by player_teamID
+            preparedStatement.setInt(1, gameID);
+
+            // Execute search query
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                // Process row of queried data until end of file - display as a black
+                if (resultSet.next() == false) return "GAME NOT FOUND";
+                else return resultSet.getString("dateOfGame");             
+                
+            } catch (SQLException e) {
+                System.out.println(e);
+            }
+        } catch (SQLException e) {
+            System.out.println(e);            
+        }
+        return "GAME NOT FOUND";
+    } 
+    
+    // Returns an array of dates for played games dates's found based on a first and last date.
+    public static ArrayList getGameDateArrayInRange(String firstGameDate, String lastGameDate) {
+
+        // Create ArrayList for array of gameIDs
+        ArrayList gameDateArray = new ArrayList<String>();
+        
+        try (PreparedStatement preparedStatement = connectToDB().prepareStatement("SELECT `dateOfGame` FROM `Played_Games` WHERE `dateOfGame` BETWEEN ? AND ?")) {
+
+            // Create prepared statement searching for game dates
+            preparedStatement.setString(1, firstGameDate);
+            preparedStatement.setString(2, lastGameDate);
+
+            // Execute search query
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                 while (resultSet.next()) {
+                    String gameDateFound = resultSet.getString("dateOfGame");
+
+                    gameDateArray.add(gameDateFound);
+                }             
+                
+            } catch (SQLException e) {
+                System.out.println(e);
+            }
+        } catch (SQLException e) {
+            System.out.println(e);            
+        }
+        return null;
     } 
     
     // Function adds a player's stats for a game to the database
