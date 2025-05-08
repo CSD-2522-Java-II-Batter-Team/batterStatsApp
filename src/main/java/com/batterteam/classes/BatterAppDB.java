@@ -463,7 +463,25 @@ public class BatterAppDB {
     
     }
     
-    // Function updates database with player stats for a game based on a player's ID and a game's ID
+    // Function adds a team's stats for a game to the database
+    public static void addTeamPerGame(int teamID, int gameID, int isHometeam) {
+        String addTeamPerGameQuery = "INSERT INTO Game_Teams)" + 
+                                " VALUES (?, ?, ?);";
+                                        
+        try (PreparedStatement insertStatement = connectToDB().prepareStatement(addTeamPerGameQuery)) {
+            
+            // Populate Insert Statement with Played Game Variables
+            insertStatement.setInt(1, teamID);
+            insertStatement.setInt(2, gameID);
+            insertStatement.setInt(3, isHomeTeam);
+            insertStatement.executeUpdate();
+
+        } catch (SQLException e) {
+            System.out.println("addTeamPerGame " + e);
+        }
+    }  
+
+        // Function updates database with player stats for a game based on a player's ID and a game's ID
     public static void updateStats(int playerID, int gameID, String playerPosition, int atBatAmount, int runsAmount, int hitsAmount, int runsBattedInAmount, 
                                         int baseOnBallsAmount, int strikeOutAmount, int leftOnBaseAmount, int assistsAmount, int putOutAmount, int homeRunAmount,
                                             int hitByPitchAmount, int doubleAmount, int tripleAmount, int totalBasesAmount, int homePlateAmount, double onBasePercent,
@@ -524,7 +542,7 @@ public class BatterAppDB {
         } catch (SQLException e) {
             System.out.println("updateStats " + e);
         }
-    } 
+    }
     
     // Returns a String of the team a player is on based on their assigned player_teamID
     public static String getTeamFromTeamID(int teamID) {
