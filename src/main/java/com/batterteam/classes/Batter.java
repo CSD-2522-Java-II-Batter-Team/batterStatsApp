@@ -331,12 +331,14 @@ public class Batter {
     }    
     
     // Method creates a string used to print out batter stats for a report of a SINGLE game
-    public String batterAsString(Batter b, String dateOfGame) {
+    public static String batterAsString(Batter b, String dateOfGame) {
 
         // Get team name from teamID
         String teamName = BatterAppDB.getTeamFromTeamID(b.getTeamID());
         // Create a full batter WITH statistics from a single game for us to display
         Batter batter = BatterAppDB.buildFullBatterObjectFromDBSingleGame(b.getPlayerFirstName(), b.getPlayerLastName(), dateOfGame, teamName);
+        
+        // TODO: Add IF/ELSE statement to return a message if no-stats were tracked for game date (Check for a valid gameID)
         
         // Initalize String
         String batterString = "";
@@ -377,7 +379,7 @@ public class Batter {
     }
     
     // Method creates a string used to print out batter stats for a report of MULLTIPLE games
-    public String batterAsString(Batter b, String dateOfFirstGame, String dateOfLastGame) {
+    public static String batterAsString(Batter b, String dateOfFirstGame, String dateOfLastGame) {
 
         // Get team name from teamID
         String teamName = BatterAppDB.getTeamFromTeamID(b.getTeamID());

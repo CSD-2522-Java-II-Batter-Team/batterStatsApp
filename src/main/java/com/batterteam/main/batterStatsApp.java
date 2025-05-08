@@ -2,7 +2,7 @@
  * Author Name: Batter Team
  * Date: 4/25/25
  * File Name: batterStatsApp.java
- * Last Update: Lillian H. - 5/1/25
+ * Last Update: Seth I. - 5/7/25
  * Program Description: Main file AND GUI for batterStatsApp.
  */
 
@@ -13,12 +13,14 @@ Lillian H. - 4/27/25 - added basic GUI structure created with Tiffany W
 Lillian H. - 4/29/25 - added finished GUI layout, minus the scene for viewing reports and logic for submitting stats
 Seth I. - 4/30/25 - Added import statement for classes package.
 Lillian H. - 5/1/2024 - Implemented Tiffany W's report scene layout and made a few modifications to GUI
+Seth I. - 5/7/25 - Resolving issue where report wasn't properly displaying to user
 ======================================
  */
 
 package com.batterteam.main;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -41,6 +43,8 @@ import com.batterteam.classes.*;
 import java.time.LocalDate;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.Region;
+
 
 
 /**
@@ -59,9 +63,11 @@ public class batterStatsApp extends Application {
     private TextField atBatsField = new TextField();
     private TextField hitsField = new TextField();
     private TextField doublesField = new TextField();
+    
     private TextField triplesField = new TextField();
     private TextField homeRunsField = new TextField();
     private TextField strikeOutsField = new TextField();
+    
     private TextField walksField = new TextField();
     private TextField rbiField = new TextField();
     private DatePicker gameDatePicker = new DatePicker();
@@ -77,8 +83,10 @@ public class batterStatsApp extends Application {
     private TextField stolenBasesField = new TextField();
     private TextField homePlatesField = new TextField();
     private ComboBox<String> stateCombo = new ComboBox<>();
+    private ToggleGroup winnerGroup = new ToggleGroup();
     TextField reportFNameField = new TextField();
     TextField reportLNameField = new TextField();
+    TextField reportTeamField = new TextField();
     
     @Override
     public void start(Stage primaryStage) {
@@ -107,19 +115,17 @@ public class batterStatsApp extends Application {
         // Main menu buttons
         Button enterStatsBtn = new Button("Enter Batter Stats");
         Button viewGameReportBtn = new Button("View Game Report");
-        Button viewCumulativeReportBtn = new Button("View Cumulative Report");
         Button helpBtn = new Button("Help");
         Button exitBtn = new Button("Exit");
 
         // Design
         enterStatsBtn.setMinWidth(200);
         viewGameReportBtn.setMinWidth(200);
-        viewCumulativeReportBtn.setMinWidth(200);
         helpBtn.setMinWidth(200);
         exitBtn.setMinWidth(200);
 
         // Page layout
-        VBox menuBox = new VBox(15, title, enterStatsBtn, viewGameReportBtn, viewCumulativeReportBtn, helpBtn, exitBtn);
+        VBox menuBox = new VBox(15, title, enterStatsBtn, viewGameReportBtn, helpBtn, exitBtn);
         menuBox.setAlignment(Pos.CENTER);
         menuBox.setPadding(new Insets(40));
 
@@ -130,25 +136,12 @@ public class batterStatsApp extends Application {
         enterStatsBtn.setOnAction(e -> {
             switchScenes(entryScene);
         });
-        
-        // !!!!!!!!!!!!!!!!  THIS IS ONLY FOR AN EXAMPLE  !!!!!!!!!!!!!!!!
-        // Call viewStats from the BatterStats class when "View Game Report" is clicked
-        viewGameReportBtn.setOnAction(e -> {
-            // For demonstration purposes, we'll hardcode the names here.
-            // In a real application, you'd get these from user input (perhaps in a new scene).
-            String firstNameToView = "Luca"; // Replace with actual first name input
-            String lastNameToView = "Trigiana";   // Replace with actual last name input
-            String dateToView = "2020-02-14";   // Replace with actual date input
-            String teamToView = "Ohio State";   // Replace with actual team name input
-            BatterAppDB.viewStatsSingleGame(firstNameToView, lastNameToView, dateToView, teamToView);
-        });
-        
+               
         // Show an information alert 
         helpBtn.setOnAction(e -> showHelpAlert());
 
         // Show report scene
         viewGameReportBtn.setOnAction(e -> switchScenes(reportScene));
-        viewCumulativeReportBtn.setOnAction(e -> switchScenes(reportScene));
         
         // Scene Setup
         return new Scene(menuBox, 400, 300);
@@ -175,7 +168,7 @@ public class batterStatsApp extends Application {
         grid.setPadding(new Insets(5, 5, 5, 5));
         grid.setHgap(10);
         grid.setVgap(10);
-        grid.add(buttonBox, 0, 15, 4, 1);
+        grid.add(buttonBox, 0, 16, 4, 1);
 
         // Instructions
         Label instructionLabel = new Label("Enter a positive integer for the fields below:");
@@ -206,6 +199,7 @@ public class batterStatsApp extends Application {
         grid.add(new Label("Total Bases:"), 0, 13);
         grid.add(new Label("Home Plates:"), 2, 13);
         grid.add(new Label("Stolen Bases:"), 2, 12);
+        grid.add(new Label("Winning Team: "), 0, 14);
   
         // Format and add Text Fields
         sizeTextFields();
@@ -217,9 +211,11 @@ public class batterStatsApp extends Application {
         grid.add(runsField, 1, 7);
         grid.add(hitsField, 1, 8);
         grid.add(rbiField, 1, 9);
+        
         grid.add(doublesField, 1, 10);
         grid.add(triplesField, 1, 11);
         grid.add(homeRunsField, 1, 12);
+        
         grid.add(totalBasesField, 1, 13);
         grid.add(cityField, 3, 2);
         grid.add(strikeOutsField, 3, 6);
@@ -237,6 +233,14 @@ public class batterStatsApp extends Application {
         // Populate Combo Box and Add to Grid
         populateComboBox();
         grid.add(stateCombo, 3, 3);
+        
+        // Winning team radio buttons
+        RadioButton batterTeamButton = new RadioButton("Batter's Team");
+        RadioButton opponentTeamButton = new RadioButton("Opponent Team");
+        batterTeamButton.setToggleGroup(winnerGroup);
+        opponentTeamButton.setToggleGroup(winnerGroup);
+        grid.add(batterTeamButton, 1, 14);
+        grid.add(opponentTeamButton, 2, 14);
 
         // Exit the app
         exitBtn.setOnAction(e -> stage.close());
@@ -246,6 +250,9 @@ public class batterStatsApp extends Application {
 
         // Return to menu
         returnBtn.setOnAction(e -> switchScenes(menuScene));
+        
+        // enter the data to the database
+        enterBtn.setOnAction(e -> enterInfo());
 
         return new Scene(grid);
     }
@@ -331,8 +338,9 @@ public class batterStatsApp extends Application {
         // First and Last name text fields
         reportFNameField.setPromptText("First Name");
         reportLNameField.setPromptText("Last Name");
+        reportTeamField.setPromptText("Team Name");
         
-        HBox nameBox = new HBox(10, reportFNameField, reportLNameField);
+        HBox nameBox = new HBox(10, reportFNameField, reportLNameField, reportTeamField);
         nameBox.setAlignment(Pos.CENTER);
 
         // Radio buttons for single or multiple games
@@ -376,15 +384,25 @@ public class batterStatsApp extends Application {
         viewReportButton.setOnAction(e -> {
             String first = reportFNameField.getText().trim();
             String last = reportLNameField.getText().trim();
+            String teamName = reportTeamField.getText().trim();
+            
+            // Get teamID based on the user entered team name
+            int teamID = BatterAppDB.getTeamIDFromTeamName(teamName);
 
+            // Display an alert is any text field is empty
             if (first.isEmpty() || last.isEmpty()) {
                 showAlert("Enter both first and last name.");
                 return;
+            } 
+            if (teamName.isEmpty()) {
+                showAlert("Enter a team name.");
+                return;
             }
 
-            String message;
+            // Initalize message used in report
+            String message = "";
 
-            // Error message if date is not selected
+            // ==== FOR SINGLE GAME DATE ====
             if (singleGameRadio.isSelected()) {
                 LocalDate date = singleGameDate.getValue();
                 if (date == null) {
@@ -392,14 +410,17 @@ public class batterStatsApp extends Application {
                     return;
                 }
 
-                //Format for report
-                if (first.equalsIgnoreCase("Test") && last.equalsIgnoreCase("Player")) {
-                    message = "Showing stats for " + first + " " + last +
-                              "\nGame Date: " + date +
-                              "\nHits: 2, AVG: .400";
-                } else {
-                    message = "No stats found for " + first + " " + last + " on " + date + ".";
+                
+                Batter searchedPlayer = new Batter(first, last, teamID);
+
+                if (searchedPlayer == null) {
+                    showAlert("No stats found for " + first + " " + last + " on " + date + ".");
+                    return;
                 }
+
+                message = Batter.batterAsString(searchedPlayer, date.toString());
+
+            // ==== FOR MULTIPLE GAME DATES ====
             } else {
                 LocalDate start = startDate.getValue();
                 LocalDate end = endDate.getValue();
@@ -408,24 +429,26 @@ public class batterStatsApp extends Application {
                     return;
                 }
 
-                // Testing report pop-up
-                if (first.equalsIgnoreCase("Test") && last.equalsIgnoreCase("Player")) {
-                    message = "Cumulative stats for " + first + " " + last +
-                              "\nFrom " + start + " to " + end +
-                              "\nHits: 12, AVG: .375";
-                } else {
-                    message = "No stats found for " + first + " " + last +
-                              " between " + start + " and " + end + ".";
+                Batter searchedPlayer = new Batter(first, last, teamID);
+
+                if (searchedPlayer == null) {
+                    showAlert("No stats found for " + first + " " + last + " between " + start.toString() + "and " + end.toString());
+                    return;
                 }
+
+                message = Batter.batterAsString(searchedPlayer, start.toString(), end.toString());
             }
 
-            // Show the message in a popup window
+            // Show the result
             Alert popup = new Alert(Alert.AlertType.INFORMATION);
             popup.setTitle("Player Report");
             popup.setHeaderText(null);
             popup.setContentText(message);
+            popup.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
             popup.showAndWait();
         });
+
+
 
 
         backButton.setOnAction(e -> stage.setScene(menuScene));
@@ -452,5 +475,71 @@ public class batterStatsApp extends Application {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setContentText(msg);
         alert.showAndWait();
+    }
+    
+    // enter batter into the database
+    private void enterInfo() {
+        // Batter and game variables
+        String firstName = firstNameField.getText();
+        String lastName = lastNameField.getText();
+        String batterTeam = teamField.getText();
+        String opponentTeam = oppTeamField.getText();
+        String dateOfGame = gameDatePicker.getValue().toString();
+        String gameCity = cityField.getText();
+        String gameState = stateCombo.getSelectionModel().getSelectedItem();
+        
+        int atBats = Integer.parseInt(atBatsField.getText());
+        int runs = Integer.parseInt(runsField.getText());
+        int hits = Integer.parseInt(hitsField.getText());
+        int rbi = Integer.parseInt(rbiField.getText());        
+        int doubles = Integer.parseInt(doublesField.getText());
+        int triples = Integer.parseInt(triplesField.getText());
+        int homeRuns = Integer.parseInt(homeRunsField.getText());   
+        int totalBases = Integer.parseInt(totalBasesField.getText());
+        int strikeOuts = Integer.parseInt(strikeOutsField.getText());
+        int baseOnBalls = Integer.parseInt(baseOnBallsField.getText());
+        int sacrificeFlies = Integer.parseInt(sacrificeFliesField.getText());
+        int sacrificeBunts = Integer.parseInt(sacrificeBuntsField.getText());
+        int hitByPitch = Integer.parseInt(hitByPitchField.getText());
+        int leftOnBase = Integer.parseInt(leftOnBasesField.getText());
+        int stolenBases = Integer.parseInt(stolenBasesField.getText());
+        int homePlates = Integer.parseInt(homePlatesField.getText());
+        RadioButton selectedButton = (RadioButton) winnerGroup.getSelectedToggle();
+        String winner = selectedButton.getText();
+        
+        // create batter object with variables above
+        Batter batter = new Batter(firstName, lastName, batterTeam, "Batter", 
+                dateOfGame, atBats, hits, homeRuns, strikeOuts, rbi, runs, doubles,
+                triples, totalBases, baseOnBalls, sacrificeFlies, sacrificeBunts, 
+                hitByPitch, leftOnBase, stolenBases, homePlates);
+        
+        // check if the batters team or opponent is currently in the database or not
+        // if not, add the team first
+        int teamExistsBatterTeam = BatterAppDB.getTeamIDFromTeamName(batterTeam);
+        if (teamExistsBatterTeam == 999) {
+            BatterAppDB.addTeam(batterTeam, 0, 0);
+        }
+        int teamExistsOppTeam = BatterAppDB.getTeamIDFromTeamName(opponentTeam);
+        if (teamExistsOppTeam == 999) {
+            BatterAppDB.addTeam(opponentTeam, 0, 0);
+        }
+        
+        // add the batter to the DB
+        BatterAppDB.addBatter(batter, batterTeam);
+        
+        // add the game to the DB based on who won
+        int gameID;
+        if (winner.equals("Batter's Team")) {
+            gameID = BatterAppDB.addGame(batterTeam, opponentTeam, dateOfGame, batterTeam, gameCity, gameState);
+        } else {
+            gameID = BatterAppDB.addGame(batterTeam, opponentTeam, dateOfGame, opponentTeam, gameCity, gameState);
+        }
+        
+        // add the batter's stats to the DB
+        BatterAppDB.addStatsPerGame(batter, gameID);
+        
+        // TODO: Clear previously entered numbers and alert users that information was updated to database.
+        // TODO: Figure out why stats per game aren' being added
+        // TODO: Figure out why Games_Teams table isn't being updated (may need to add a query/meth
     }
 }

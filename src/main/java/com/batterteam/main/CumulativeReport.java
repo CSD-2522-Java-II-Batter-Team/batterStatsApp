@@ -8,7 +8,7 @@
 
 /*
 ============= CHANGE LOG =============
-
+TODO: Add reset feature to clear whatever user entered after they've generated a report
 
 ======================================
  */

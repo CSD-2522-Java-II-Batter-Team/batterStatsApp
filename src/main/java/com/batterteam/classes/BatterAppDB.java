@@ -113,10 +113,10 @@ public class BatterAppDB {
                 return b;
                 
             } catch (SQLException e) {
-                System.out.println(e);
+                System.out.println("buildFullBatter " + e);
             }
         } catch (SQLException e) {
-            System.out.println(e);
+            System.out.println("buildFullBatter " + e);
         }
         return null;
     }
@@ -125,16 +125,16 @@ public class BatterAppDB {
     // EXAMPLE: If Babe Ruth played 10 games...this would return 10 Babe Ruth objects each with different stats per object. 
     public static ArrayList buildFullBatterObjectsFromDBMultiGame(String firstName, String lastName, String firstGameDate, String lastGameDate, String teamName) {
         
-        String queryAsString = "SELECT P.playerFirstName, P.playerLastName, T.teamName, PPGS.playerPosition, PPGS.atBatAmount, PPGS.runsAmount," + 
-                                    " PPGS.hitsAmount, PPGS.runsBattedInAmount, PPGS.doubleAmount, PPGS.tripleAmount, PPGS.homeRunAmount," +
-                                    " PPGS.totalBasesAmount, PPGS.strikeOutAmount, PPGS.baseOnBallsAmount, PPGS.sacrificFlyAmount," +
-                                    " PPGS.sacrificBuntAmount, PPGS.hitByPitchAmount, PPGS.leftOnBaseAmount, PPGS.stolenBaseAttemptAmount, PPGS.homePlateAmount," +
-                                    " PG.dateOfGame" +
-                                " FROM `Players` P JOIN `Player_Per_Game_Stats` PPGS ON P.`playerID` = PPGS.`playerID`" + 
-                                    " JOIN `Played_Games` PG ON PPGS.`gameID` = PG.gameID" +
-                                    " JOIN `Game_Teams` GT ON PG.`gameID` = GT.`gameID`" + 
-                                    " JOIN `Teams` T ON GT.`teamID` = T.`teamID`" +
-                               	" WHERE P.`playerFirstName` = ? AND P.`playerLastName` = ? AND (PG.dateOfGame BETWEEN ? AND ?) AND T.`teamName` = ?;";
+        String queryAsString = "SELECT P.playerFirstName, P.playerLastName, T.teamName, PPGS.playerPosition, PPGS.atBatAmount, PPGS.runsAmount," +
+                                    "PPGS.hitsAmount, PPGS.runsBattedInAmount, PPGS.doubleAmount, PPGS.tripleAmount, PPGS.homeRunAmount," +
+                                    "PPGS.totalBasesAmount, PPGS.strikeOutAmount, PPGS.baseOnBallsAmount, PPGS.sacrificFlyAmount," +
+                                    "PPGS.sacrificBuntAmount, PPGS.hitByPitchAmount, PPGS.leftOnBaseAmount, PPGS.stolenBaseAttemptAmount, PPGS.homePlateAmount," +
+                                    "PG.dateOfGame" +
+                                "FROM `Players` P JOIN `Player_Per_Game_Stats` PPGS ON P.`playerID` = PPGS.`playerID`" +
+                                    "JOIN `Played_Games` PG ON PPGS.`gameID` = PG.gameID" +
+                                    "JOIN `Game_Teams` GT ON PG.`gameID` = GT.`gameID`" +
+                                    "JOIN `Teams` T ON GT.`teamID` = T.`teamID`" +
+                               	"WHERE P.`playerFirstName` = 'Brent' AND P.`playerLastName` = 'Todys' AND (PG.dateOfGame BETWEEN ? AND ?) AND T.`teamName` = ?;";
         
         ArrayList batterMultiGameStats = new ArrayList<Batter>();
                 
@@ -201,10 +201,10 @@ public class BatterAppDB {
                 return batterMultiGameStats;
                 
             } catch (SQLException e) {
-                System.out.println(e);
+                System.out.println("buildFullBatter " + e);
             }
         } catch (SQLException e) {
-            System.out.println(e);
+            System.out.println("buildFullBatter " + e);
         }
         return null;
     }
@@ -261,10 +261,10 @@ public class BatterAppDB {
                 Console.println();
                 
             } catch (SQLException e) {
-                System.out.println(e);
+                System.out.println("viewStats " + e);
             }
         } catch (SQLException e) {
-            System.out.println(e);
+            System.out.println("viewStats " + e);
         }
     }
     
@@ -294,7 +294,7 @@ public class BatterAppDB {
             }
 
         } catch (SQLException e) {
-            System.out.println(e);
+            System.out.println("addBatter " + e);
         }
 
         return newPlayerID;
@@ -327,7 +327,7 @@ public class BatterAppDB {
             }
      
         } catch (SQLException e) {
-            System.out.println(e);
+            System.out.println("addTeam " + e);
         }
         return newTeamID;
     } 
@@ -364,7 +364,7 @@ public class BatterAppDB {
             }
 
         } catch (SQLException e) {
-            System.out.println(e);
+            System.out.println("addGame " + e);
         }
         return newGameID;
     } 
@@ -385,10 +385,10 @@ public class BatterAppDB {
                 else return resultSet.getString("dateOfGame");             
                 
             } catch (SQLException e) {
-                System.out.println(e);
+                System.out.println("dateFromID " + e);
             }
         } catch (SQLException e) {
-            System.out.println(e);            
+            System.out.println("dateFromID " + e);            
         }
         return "GAME NOT FOUND";
     } 
@@ -414,11 +414,12 @@ public class BatterAppDB {
                     gameDateArray.add(gameDateFound);
                 }             
                 
+                 return gameDateArray;
             } catch (SQLException e) {
-                System.out.println(e);
+                System.out.println("getDateArray " + e);
             }
         } catch (SQLException e) {
-            System.out.println(e);            
+            System.out.println("getDateArray " + e);            
         }
         return null;
     } 
@@ -426,7 +427,7 @@ public class BatterAppDB {
     // Function adds a player's stats for a game to the database
     public static void addStatsPerGame(Batter b, int gameID) {
         
-        String addStatsPerGameQuery = "INSERT INTO Player_Per_Game_Stats (playerID, gameID, playerPosition, atBatAmount, runsAmount. hitsAmount, runsBattedInAmount," +
+        String addStatsPerGameQuery = "INSERT INTO Player_Per_Game_Stats (playerID, gameID, playerPosition, atBatAmount, runsAmount, hitsAmount, runsBattedInAmount," +
                                         " baseOnBallsAmount, strikeOutAmount, leftOnBaseAmount, assistsAmount, putOutAmount, homeRunAmount, hitByPitchAmount," +
                                         " doubleAmount, tripleAmount, totalBasesAmount, homePlateAmount, onBasePercent, sacrificFlyAmount, sacrificBuntAmount, stolenBaseAttemptAmount)" +
                                       " VALUES (?, ?, ?, ?, ?, ?, ?," +
@@ -457,7 +458,7 @@ public class BatterAppDB {
         
             
         } catch (SQLException e) {
-            System.out.println(e);
+            System.out.println("addStatsPerGame " + e);
         }
     
     }
@@ -521,7 +522,7 @@ public class BatterAppDB {
             preparedStatement.executeUpdate();
 
         } catch (SQLException e) {
-            System.out.println(e);
+            System.out.println("updateStats " + e);
         }
     } 
     
@@ -540,10 +541,10 @@ public class BatterAppDB {
                 else return resultSet.getString("teamName");             
                 
             } catch (SQLException e) {
-                System.out.println(e);
+                System.out.println("getTeamFromID " + e);
             }
         } catch (SQLException e) {
-            System.out.println(e);            
+            System.out.println("getTeamFromID " + e);            
         }
         return "TEAM NOT FOUND";
     }
@@ -560,13 +561,13 @@ public class BatterAppDB {
 
                 // Process row of queried data until end of file - display as a black
                 if (resultSet.next() == false) return 999;
-                else return resultSet.getInt("teamID");             
+                else return resultSet.getInt("teamID"); 
                 
             } catch (SQLException e) {
-                System.out.println(e);
+                System.out.println("getTeamIDFromName " + e);
             }
         } catch (SQLException e) {
-            System.out.println(e);            
+            System.out.println("getTeamIDFromName " + e);            
         }
         return 999;
     }
