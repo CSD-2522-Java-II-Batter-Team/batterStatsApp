@@ -516,12 +516,18 @@ public class batterStatsApp extends Application {
         // check if the batters team or opponent is currently in the database or not
         // if not, add the team first
         int teamExistsBatterTeam = BatterAppDB.getTeamIDFromTeamName(batterTeam);
-        if (teamExistsBatterTeam == 999) {
-            BatterAppDB.addTeam(batterTeam, 0, 0);
-        }
         int teamExistsOppTeam = BatterAppDB.getTeamIDFromTeamName(opponentTeam);
+        int newBatterTeamID;
+        int newOppTeamID;
+        
+        if (teamExistsBatterTeam == 999) {
+            newBatterTeamID = BatterAppDB.addTeam(batterTeam, 0, 0);
+            teamExistsBatterTeam = newBatterTeamID;
+        }
+        
         if (teamExistsOppTeam == 999) {
-            BatterAppDB.addTeam(opponentTeam, 0, 0);
+            newOppTeamID = BatterAppDB.addTeam(opponentTeam, 0, 0);
+            teamExistsOppTeam = newOppTeamID;
         }
         
         // add the batter to the DB
@@ -531,15 +537,22 @@ public class batterStatsApp extends Application {
         int gameID;
         if (winner.equals("Batter's Team")) {
             gameID = BatterAppDB.addGame(batterTeam, opponentTeam, dateOfGame, batterTeam, gameCity, gameState);
+            BatterAppDB.addTeamPerGame(gameID, teamExistsBatterTeam, 1);
+            BatterAppDB.addTeamPerGame(gameID, teamExistsOppTeam, 0);
         } else {
             gameID = BatterAppDB.addGame(batterTeam, opponentTeam, dateOfGame, opponentTeam, gameCity, gameState);
+            BatterAppDB.addTeamPerGame(gameID, teamExistsBatterTeam, 0);
+            BatterAppDB.addTeamPerGame(gameID, teamExistsOppTeam, 1);
         }
+        
+        Console.println("Found GameID: " + gameID);
+        Console.println("Found teamExistsBatterTeam: " + teamExistsBatterTeam);
+        Console.println("Found teamExistsOppTeam: " + teamExistsOppTeam);
         
         // add the batter's stats to the DB
         BatterAppDB.addStatsPerGame(batter, gameID);
-        
+                
         // TODO: Clear previously entered numbers and alert users that information was updated to database.
         // TODO: Figure out why stats per game aren' being added
-        // TODO: Figure out why Games_Teams table isn't being updated (may need to add a query/meth
     }
 }

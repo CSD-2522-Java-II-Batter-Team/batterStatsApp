@@ -335,21 +335,22 @@ public class BatterAppDB {
     // Function adds a Played Game to the database
     public static int addGame(String homeTeamName, String awayTeamName, String dateOfGame, String winningTeam, String venueCity, String venueState) {
         
-        int newGameID = -1;
-        int teamID = getTeamIDFromTeamName(winningTeam); // Find teamID from based on team name - Value will be 999 if no team was found
+        int homeTeamID = getTeamIDFromTeamName(homeTeamName); // Find homeTeamID from based on team name - Value will be 999 if no team was found
+        int awayTeamID = getTeamIDFromTeamName(awayTeamName); // Find awayTeamID from based on team name - Value will be 999 if no team was found
+        int winningTeamID = getTeamIDFromTeamName(winningTeam); // Find winningTeamID from based on team name - Value will be 999 if no team was found
         
         String addGameQuery = "INSERT INTO Played_Games (homeTeam, awayTeam, dateOfGame, winningTeam, venueCity, venueState)" + 
                                 " VALUES (?, ?, ?, ?, ?, ?);";
         String getLastIDQuery = "SELECT last_insert_rowid();";
-                                        
+        
         try (PreparedStatement insertStatement = connectToDB().prepareStatement(addGameQuery);
              PreparedStatement selectLastIDStatement = connectToDB().prepareStatement(getLastIDQuery)) {
             
             // Populate Insert Statement with Played Game Variables
-            insertStatement.setString(1, homeTeamName);
-            insertStatement.setString(2, awayTeamName);
+            insertStatement.setInt(1, homeTeamID);
+            insertStatement.setInt(2, awayTeamID);
             insertStatement.setString(3, dateOfGame);
-            insertStatement.setInt(4, teamID);
+            insertStatement.setInt(4, winningTeamID);
             insertStatement.setString(5, venueCity);
             insertStatement.setString(6, venueState);
             insertStatement.executeUpdate();
@@ -357,16 +358,16 @@ public class BatterAppDB {
             // Locate the row/id of the newely created team
             try (ResultSet resultSet = selectLastIDStatement.executeQuery()) {
                 if (resultSet.next()) {
-                    newGameID = resultSet.getInt(1);
+                    return resultSet.getInt(1);
                 } else {
                     System.out.println("Error: Could not retrieve last inserted row ID.");
-                }
+                }               
             }
 
         } catch (SQLException e) {
             System.out.println("addGame " + e);
         }
-        return newGameID;
+        return 0;
     } 
     
     // Methods returns a String 
@@ -464,15 +465,16 @@ public class BatterAppDB {
     }
     
     // Function adds a team's stats for a game to the database
-    public static void addTeamPerGame(int teamID, int gameID, int isHometeam) {
-        String addTeamPerGameQuery = "INSERT INTO Game_Teams)" + 
+    // isHomeTeam should be set to 0 for false and 1 for true
+    public static void addTeamPerGame(int gameID, int teamID, int isHomeTeam) {
+        String addTeamPerGameQuery = "INSERT INTO `Game_Teams`" + 
                                 " VALUES (?, ?, ?);";
                                         
         try (PreparedStatement insertStatement = connectToDB().prepareStatement(addTeamPerGameQuery)) {
             
             // Populate Insert Statement with Played Game Variables
-            insertStatement.setInt(1, teamID);
-            insertStatement.setInt(2, gameID);
+            insertStatement.setInt(1, gameID);
+            insertStatement.setInt(2, teamID);
             insertStatement.setInt(3, isHomeTeam);
             insertStatement.executeUpdate();
 
