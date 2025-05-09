@@ -14,6 +14,7 @@ Lillian H. - 4/29/25 - added finished GUI layout, minus the scene for viewing re
 Seth I. - 4/30/25 - Added import statement for classes package.
 Lillian H. - 5/1/2024 - Implemented Tiffany W's report scene layout and made a few modifications to GUI
 Seth I. - 5/7/25 - Resolving issue where report wasn't properly displaying to user
+Lillian H - 5/8/2025 - Added data validation
 ======================================
  */
 
@@ -310,7 +311,7 @@ public class batterStatsApp extends Application {
         lastNameField.setMaxSize(100, 100);
         teamField.setMaxSize(100, 100);
         oppTeamField.setMaxSize(100, 100);
-        gameDatePicker.setMaxSize(100, 100);
+        gameDatePicker.setMaxSize(110, 100);
         cityField.setMaxSize(100, 100);
         
         atBatsField.setMaxSize(50, 50);
@@ -379,12 +380,13 @@ public class batterStatsApp extends Application {
         // Buttons
         Button viewReportButton = new Button("View Report");
         Button backButton = new Button("Back");
+        backButton.setOnAction(e -> switchScenes(menuScene));
         
         // Error message if full name is not entered
         viewReportButton.setOnAction(e -> {
-            String first = reportFNameField.getText().trim();
-            String last = reportLNameField.getText().trim();
-            String teamName = reportTeamField.getText().trim();
+            String first = formattedWord(reportFNameField.getText());
+            String last = formattedWord(reportLNameField.getText());
+            String teamName = formattedWord(reportTeamField.getText());
             
             // Get teamID based on the user entered team name
             int teamID = BatterAppDB.getTeamIDFromTeamName(teamName);
@@ -479,80 +481,141 @@ public class batterStatsApp extends Application {
     
     // enter batter into the database
     private void enterInfo() {
-        // Batter and game variables
-        String firstName = firstNameField.getText();
-        String lastName = lastNameField.getText();
-        String batterTeam = teamField.getText();
-        String opponentTeam = oppTeamField.getText();
-        String dateOfGame = gameDatePicker.getValue().toString();
-        String gameCity = cityField.getText();
-        String gameState = stateCombo.getSelectionModel().getSelectedItem();
         
-        int atBats = Integer.parseInt(atBatsField.getText());
-        int runs = Integer.parseInt(runsField.getText());
-        int hits = Integer.parseInt(hitsField.getText());
-        int rbi = Integer.parseInt(rbiField.getText());        
-        int doubles = Integer.parseInt(doublesField.getText());
-        int triples = Integer.parseInt(triplesField.getText());
-        int homeRuns = Integer.parseInt(homeRunsField.getText());   
-        int totalBases = Integer.parseInt(totalBasesField.getText());
-        int strikeOuts = Integer.parseInt(strikeOutsField.getText());
-        int baseOnBalls = Integer.parseInt(baseOnBallsField.getText());
-        int sacrificeFlies = Integer.parseInt(sacrificeFliesField.getText());
-        int sacrificeBunts = Integer.parseInt(sacrificeBuntsField.getText());
-        int hitByPitch = Integer.parseInt(hitByPitchField.getText());
-        int leftOnBase = Integer.parseInt(leftOnBasesField.getText());
-        int stolenBases = Integer.parseInt(stolenBasesField.getText());
-        int homePlates = Integer.parseInt(homePlatesField.getText());
-        RadioButton selectedButton = (RadioButton) winnerGroup.getSelectedToggle();
-        String winner = selectedButton.getText();
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         
-        // create batter object with variables above
-        Batter batter = new Batter(firstName, lastName, batterTeam, "Batter", 
-                dateOfGame, atBats, hits, homeRuns, strikeOuts, rbi, runs, doubles,
-                triples, totalBases, baseOnBalls, sacrificeFlies, sacrificeBunts, 
-                hitByPitch, leftOnBase, stolenBases, homePlates);
-        
-        // check if the batters team or opponent is currently in the database or not
-        // if not, add the team first
-        int teamExistsBatterTeam = BatterAppDB.getTeamIDFromTeamName(batterTeam);
-        int teamExistsOppTeam = BatterAppDB.getTeamIDFromTeamName(opponentTeam);
-        int newBatterTeamID;
-        int newOppTeamID;
-        
-        if (teamExistsBatterTeam == 999) {
-            newBatterTeamID = BatterAppDB.addTeam(batterTeam, 0, 0);
-            teamExistsBatterTeam = newBatterTeamID;
+        // Validate data
+        Validation v = new Validation();
+        String errorMsg = "";
+        errorMsg += v.isPresent(firstNameField.getText(), "First Name");
+        errorMsg += v.isPresent(lastNameField.getText(), "Last Name");
+        errorMsg += v.isPresent(teamField.getText(), "Batter's Team");
+        String state = stateCombo.getSelectionModel().getSelectedItem();
+        if (state == null) {
+            errorMsg += "State is required.\n";
         }
+        errorMsg += v.isPresent(oppTeamField.getText(), "Opponent Team");
+        LocalDate dateOfGame = gameDatePicker.getValue();
+        if (dateOfGame == null) {
+            errorMsg += "Date is required. Check formatting.\n";
+        } 
+        errorMsg += v.isPresent(cityField.getText(), "Venue City");
+        errorMsg += v.isInteger(atBatsField.getText(), "At Bats");
+        errorMsg += v.isInteger(runsField.getText(), "Runs");
+        errorMsg += v.isInteger(hitsField.getText(), "Hits");
+        errorMsg += v.isInteger(rbiField.getText(), "RBI");
+        errorMsg += v.isInteger(doublesField.getText(), "Doubles");
+        errorMsg += v.isInteger(triplesField.getText(), "Triples");
+        errorMsg += v.isInteger(homeRunsField.getText(), "Home Runs");
+        errorMsg += v.isInteger(totalBasesField.getText(), "Total Bases");
+        errorMsg += v.isInteger(strikeOutsField.getText(), "Strike Outs");
+        errorMsg += v.isInteger(baseOnBallsField.getText(), "Base on Balls");
+        errorMsg += v.isInteger(sacrificeFliesField.getText(), "Sacrifice Flies");
+        errorMsg += v.isInteger(sacrificeBuntsField.getText(), "Sacrifice Bunts");
+        errorMsg += v.isInteger(hitByPitchField.getText(), "Hit By Pitch");
+        errorMsg += v.isInteger(leftOnBasesField.getText(), "Left on Bases");
+        errorMsg += v.isInteger(stolenBasesField.getText(), "Stolen Bases");
+        errorMsg += v.isInteger(homePlatesField.getText(), "Home Plates");
         
-        if (teamExistsOppTeam == 999) {
-            newOppTeamID = BatterAppDB.addTeam(opponentTeam, 0, 0);
-            teamExistsOppTeam = newOppTeamID;
-        }
-        
-        // add the batter to the DB
-        BatterAppDB.addBatter(batter, batterTeam);
-        
-        // add the game to the DB based on who won
-        int gameID;
-        if (winner.equals("Batter's Team")) {
-            gameID = BatterAppDB.addGame(batterTeam, opponentTeam, dateOfGame, batterTeam, gameCity, gameState);
-            BatterAppDB.addTeamPerGame(gameID, teamExistsBatterTeam, 1);
-            BatterAppDB.addTeamPerGame(gameID, teamExistsOppTeam, 0);
+        if (errorMsg.isEmpty()) {
+            // Batter and game variables
+            String firstName = formattedWord(firstNameField.getText());
+            String lastName = formattedWord(lastNameField.getText());
+            String batterTeam = formattedWord(teamField.getText());
+            String opponentTeam = formattedWord(oppTeamField.getText());
+            String formattedDateOfGame = dateOfGame.format(df);
+            String gameCity = formattedWord(cityField.getText());
+            String gameState = stateCombo.getSelectionModel().getSelectedItem(); 
+
+            int atBats = Integer.parseInt(atBatsField.getText());
+            int runs = Integer.parseInt(runsField.getText());
+            int hits = Integer.parseInt(hitsField.getText());
+            int rbi = Integer.parseInt(rbiField.getText());        
+            int doubles = Integer.parseInt(doublesField.getText());
+            int triples = Integer.parseInt(triplesField.getText());
+            int homeRuns = Integer.parseInt(homeRunsField.getText());   
+            int totalBases = Integer.parseInt(totalBasesField.getText());
+            int strikeOuts = Integer.parseInt(strikeOutsField.getText());
+            int baseOnBalls = Integer.parseInt(baseOnBallsField.getText());
+            int sacrificeFlies = Integer.parseInt(sacrificeFliesField.getText());
+            int sacrificeBunts = Integer.parseInt(sacrificeBuntsField.getText());
+            int hitByPitch = Integer.parseInt(hitByPitchField.getText());
+            int leftOnBase = Integer.parseInt(leftOnBasesField.getText());
+            int stolenBases = Integer.parseInt(stolenBasesField.getText());
+            int homePlates = Integer.parseInt(homePlatesField.getText());
+            RadioButton selectedButton = (RadioButton) winnerGroup.getSelectedToggle();
+            String winner = selectedButton.getText();
+            
+            // create batter object with variables above
+            Batter batter = new Batter(firstName, lastName, batterTeam, "Batter", 
+                    dateOfGame, atBats, hits, homeRuns, strikeOuts, rbi, runs, doubles,
+                    triples, totalBases, baseOnBalls, sacrificeFlies, sacrificeBunts, 
+                    hitByPitch, leftOnBase, stolenBases, homePlates);
+            
+            // check if the batters team or opponent is currently in the database or not
+            // if not, add the team first
+            int teamExistsBatterTeam = BatterAppDB.getTeamIDFromTeamName(batterTeam);
+            int teamExistsOppTeam = BatterAppDB.getTeamIDFromTeamName(opponentTeam);
+            int newBatterTeamID;
+            int newOppTeamID;
+            
+            if (teamExistsBatterTeam == 999) {
+                newBatterTeamID = BatterAppDB.addTeam(batterTeam, 0, 0);
+                teamExistsBatterTeam = newBatterTeamID;
+            }
+            
+            if (teamExistsOppTeam == 999) {
+                newOppTeamID = BatterAppDB.addTeam(opponentTeam, 0, 0);
+                teamExistsOppTeam = newOppTeamID;
+            }
+            
+            // add the batter to the DB
+            BatterAppDB.addBatter(batter, batterTeam);
+            
+            // add the game to the DB based on who won
+            int gameID;
+            if (winner.equals("Batter's Team")) {
+                gameID = BatterAppDB.addGame(batterTeam, opponentTeam, dateOfGame, batterTeam, gameCity, gameState);
+                BatterAppDB.addTeamPerGame(gameID, teamExistsBatterTeam, 1);
+                BatterAppDB.addTeamPerGame(gameID, teamExistsOppTeam, 0);
+            } else {
+                gameID = BatterAppDB.addGame(batterTeam, opponentTeam, dateOfGame, opponentTeam, gameCity, gameState);
+                BatterAppDB.addTeamPerGame(gameID, teamExistsBatterTeam, 0);
+                BatterAppDB.addTeamPerGame(gameID, teamExistsOppTeam, 1);
+            }
+            
+            Console.println("Found GameID: " + gameID);
+            Console.println("Found teamExistsBatterTeam: " + teamExistsBatterTeam);
+            Console.println("Found teamExistsOppTeam: " + teamExistsOppTeam);
+            
+            // add the batter's stats to the DB
+            BatterAppDB.addStatsPerGame(batter, gameID);
+                    
+            // TODO: Clear previously entered numbers and alert users that information was updated to database.
+            // TODO: Figure out why stats per game aren' being added
         } else {
-            gameID = BatterAppDB.addGame(batterTeam, opponentTeam, dateOfGame, opponentTeam, gameCity, gameState);
-            BatterAppDB.addTeamPerGame(gameID, teamExistsBatterTeam, 0);
-            BatterAppDB.addTeamPerGame(gameID, teamExistsOppTeam, 1);
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setHeaderText("Invalid/Missing Data");
+            alert.setContentText(errorMsg);
+            alert.showAndWait();
+        }
+    }
+
+    // Capitalize and format every word in the string
+    public String formattedWord(String str) {
+        // Trim input
+        String[] words = str.trim().split("\\s+");
+        StringBuilder result = new StringBuilder();
+        
+        for (String word: words) {
+            if (word.length() > 0) {
+                // Capitalize first letter and append remainder
+                result.append(Character.toUpperCase(word.charAt(0)))
+                        .append(word.substring(1).toLowerCase())
+                        .append(" ");
+            }
         }
         
-        Console.println("Found GameID: " + gameID);
-        Console.println("Found teamExistsBatterTeam: " + teamExistsBatterTeam);
-        Console.println("Found teamExistsOppTeam: " + teamExistsOppTeam);
-        
-        // add the batter's stats to the DB
-        BatterAppDB.addStatsPerGame(batter, gameID);
-                
-        // TODO: Clear previously entered numbers and alert users that information was updated to database.
-        // TODO: Figure out why stats per game aren' being added
+        return result.toString().trim();
     }
 }
