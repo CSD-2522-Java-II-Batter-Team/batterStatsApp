@@ -39,12 +39,16 @@ public class Batter {
     private int homeRuns;
     private int strikeOuts;
     private int walks;
-    private int runsBattedIn;
-    private double battingAverage;
+    private int runsBattedIn;  
     private int runs;
     private int doubles;
     private int triples;
+    
     private int totalBases;
+    private double sluggingAmount;
+    private double battingAverage;
+    private double onBasePerc;
+    
     private int basesOnBalls;
     private int sacrificFly;
     private int sacrificBunt;
@@ -82,7 +86,7 @@ public class Batter {
         teamID = tID;
     }
     public Batter(String firstName, String lastName, String team, String playPos, String dayOfG, int ab, int h, int hr, int so, int rbi, int runAmount, 
-                    int doublesAmount, int triplesAmount, int tb, int bob, int sf, int sb, int hbp, int lob, int sb_att, int hp) {
+                    int doublesAmount, int triplesAmount, int bob, int sf, int sb, int hbp, int lob, int sb_att, int hp) {
         playerFirstName = firstName;
         playerLastName = lastName;
         teamName = team;
@@ -96,7 +100,6 @@ public class Batter {
         runs = runAmount;
         doubles = doublesAmount;
         triples = triplesAmount;
-        totalBases = tb;
         basesOnBalls = bob;
         sacrificFly = sf;
         sacrificBunt = sb;
@@ -104,6 +107,12 @@ public class Batter {
         leftOnBase = lob;
         stolenBaseAttempts = sb_att;
         homePlate = hp;
+       
+        totalBases = calculateTotalBases(h, doublesAmount, triplesAmount, hr);
+        sluggingAmount = calcSluggingPercent(totalBases, ab);
+        battingAverage = calcBattingAverage(h, ab);
+        onBasePerc = calcOnBasePercent(h, bob, hbp, ab, sf);
+        
         updateBattingAverage();
     }
     
@@ -192,8 +201,11 @@ public class Batter {
     }
 
     // == Batting Average Getter (Setter not needed as it's calculated) ==
-    public double getAvg() {
+    public double getBattingAvg() {
         return battingAverage;
+    }
+    public void setBattingAvg(double batAv) {
+        this.battingAverage = batAv;
     }
 
     // == Player First Name Getter/Setter ==
@@ -318,7 +330,22 @@ public class Batter {
     public void setDateOfGame(String dateOfGame) {
         this.dateOfGame = dateOfGame;
     }
-
+    
+    // == Slugging Amount Getter/Setter ==
+    public double getSluggingAmount() {
+        return sluggingAmount;
+    }
+    public void setSluggingAmount(double slugAm) {
+        this.sluggingAmount = slugAm;
+    }
+    
+    // == On Base Percentage Getter/Setter ==
+    public double getOnBasePerc() {
+        return onBasePerc;
+    }
+    public void setOnBasePerc(double onBasePer) {
+        this.onBasePerc = onBasePer;
+    }
     
     // ============= Class Methods =============
     // Method to update batting average
@@ -329,6 +356,37 @@ public class Batter {
             this.battingAverage = 0.0;
         }
     }    
+    
+    // Method returns the batting average of a batter
+    public static double calcBattingAverage(int hits, int atBats) {
+        if (atBats == 0) {
+            return 0.0;
+        } else {
+            return (double) hits / atBats;
+        }
+    }
+    
+    // Method returns the on-base percentage of a batter as a decimal
+    public static double calcOnBasePercent(int hits, int walks, int hbp, int atBats, int sacFlies) {
+        int top = hits + walks + hbp;
+        int bottom = atBats + walks + hbp + sacFlies;
+
+        if (bottom == 0) {
+            return 0.0;
+        } else {
+            return (double) top / bottom;
+        }
+    }
+    
+    // Method returns the on-base percentage of a batter as a decimal
+    public static double calcSluggingPercent(int totalBases, int atBats) {
+        return totalBases / atBats;
+    }
+    
+    // Method returns the total bases of a batter
+    public static int calculateTotalBases(int hits, int doubles, int triples, int homeRuns) {
+        return hits + (2 * doubles) + (3 * triples) + (4 * homeRuns);
+    }
     
     // Method creates a string used to print out batter stats for a report of a SINGLE game
     public static String batterAsString(Batter b, String dateOfGame) {
@@ -376,6 +434,9 @@ public class Batter {
                 "HBP: ", String.valueOf(batter.getHitByPitch()),
                 "LOB: ", String.valueOf(batter.getLeftOnBase()));
             batterString += String.format("%-7s%-4s%n", "SB-ATT: ", String.valueOf(batter.getStolenBaseAttempts()));
+            batterString += String.format("%-7s%-4s%n", "Batting Average: ", String.valueOf(batter.getBattingAvg()));
+            batterString += String.format("%-7s%-4s%n", "Slugging Amount: ", String.valueOf(batter.getSluggingAmount()));
+            batterString += String.format("%-7s%-4s%n", "On Base %: ", String.valueOf(batter.getOnBasePerc()));
 
             return batterString;
         } else return "NO RECORDS FOUND!\n" + b.getPlayerFirstName() + " " + b.getPlayerLastName() + " didn't play on " + dateOfGame;
@@ -430,7 +491,10 @@ public class Batter {
                     "SB: ", String.valueOf(batter.getSacrificBunt()),
                     "HBP: ", String.valueOf(batter.getHitByPitch()),
                     "LOB: ", String.valueOf(batter.getLeftOnBase()));
-                batterString += String.format("%-7s%-4s%n%n", "SB-ATT: ", String.valueOf(batter.getStolenBaseAttempts()));
+                batterString += String.format("%-7s%-4s%n", "SB-ATT: ", String.valueOf(batter.getStolenBaseAttempts()));
+                batterString += String.format("%-7s%-4s%n", "Batting Average: ", String.valueOf(batter.getBattingAvg()));
+                batterString += String.format("%-7s%-4s%n", "Slugging Amount: ", String.valueOf(batter.getSluggingAmount()));
+                batterString += String.format("%-7s%-4s%n%n", "On Base %: ", String.valueOf(batter.getOnBasePerc()));
             }
 
             return batterString;

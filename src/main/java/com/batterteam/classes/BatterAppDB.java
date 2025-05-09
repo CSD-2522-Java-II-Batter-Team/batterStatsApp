@@ -45,7 +45,7 @@ public class BatterAppDB {
                                     " PPGS.hitsAmount, PPGS.runsBattedInAmount, PPGS.doubleAmount, PPGS.tripleAmount, PPGS.homeRunAmount," +
                                     " PPGS.totalBasesAmount, PPGS.strikeOutAmount, PPGS.baseOnBallsAmount, PPGS.sacrificFlyAmount," +
                                     " PPGS.sacrificBuntAmount, PPGS.hitByPitchAmount, PPGS.leftOnBaseAmount, PPGS.stolenBaseAttemptAmount, PPGS.homePlateAmount," +
-                                    " PG.dateOfGame" +
+                                    " PG.dateOfGame, PPGS.sluggingAmount, PPGS.onBasePercent, PPGS.battingAverage" +
                                 " FROM `Players` P JOIN `Player_Per_Game_Stats` PPGS ON P.`playerID` = PPGS.`playerID`" + 
                                     " JOIN `Played_Games` PG ON PPGS.`gameID` = PG.gameID" +
                                     " JOIN `Game_Teams` GT ON PG.`gameID` = GT.`gameID`" + 
@@ -80,6 +80,9 @@ public class BatterAppDB {
             int playerLeftOnBase = 0;
             int playerStolenBaseAttempts = 0;
             int playerHomePlate = 0;
+            double sluggingAmount = 0;
+            double onBasePercent = 0;
+            double battingAverage = 0;
                            
             // Execute search query
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -95,8 +98,7 @@ public class BatterAppDB {
                     playerRunsBattedIn = resultSet.getInt("runsBattedInAmount");
                     playerDoubles = resultSet.getInt("doubleAmount");
                     playerTriples = resultSet.getInt("tripleAmount");
-                    playerHomeRuns = resultSet.getInt("homeRunAmount");
-                    playerTotalBases = resultSet.getInt("totalBasesAmount");       
+                    playerHomeRuns = resultSet.getInt("homeRunAmount");       
                     playerStrikeOut = resultSet.getInt("strikeOutAmount");
                     playerBaseOnBalls = resultSet.getInt("baseOnBallsAmount"); 
                     playerSacrificFly = resultSet.getInt("sacrificFlyAmount"); 
@@ -105,10 +107,13 @@ public class BatterAppDB {
                     playerLeftOnBase = resultSet.getInt("leftOnBaseAmount"); 
                     playerStolenBaseAttempts = resultSet.getInt("stolenBaseAttemptAmount"); 
                     playerHomePlate = resultSet.getInt("homePlateAmount"); 
+                    sluggingAmount = resultSet.getDouble("sluggingAmount"); 
+                    onBasePercent = resultSet.getDouble("onBasePercent"); 
+                    battingAverage = resultSet.getDouble("battingAverage"); 
                 }
                 
                 Batter b = new Batter(firstName, lastName, playerTeam, playerPosition, playedGameDate, playerAB, playerHits, playerHomeRuns, playerStrikeOut, playerRunsBattedIn, playerRuns,
-                                        playerDoubles, playerTriples, playerTotalBases, playerBaseOnBalls, playerSacrificFly, playerSacrificBunt, 
+                                        playerDoubles, playerTriples, playerBaseOnBalls, playerSacrificFly, playerSacrificBunt, 
                                             playerHitByPitch, playerLeftOnBase, playerStolenBaseAttempts, playerHomePlate);
                 return b;
                 
@@ -129,7 +134,7 @@ public class BatterAppDB {
                                     "PPGS.hitsAmount, PPGS.runsBattedInAmount, PPGS.doubleAmount, PPGS.tripleAmount, PPGS.homeRunAmount," +
                                     "PPGS.totalBasesAmount, PPGS.strikeOutAmount, PPGS.baseOnBallsAmount, PPGS.sacrificFlyAmount," +
                                     "PPGS.sacrificBuntAmount, PPGS.hitByPitchAmount, PPGS.leftOnBaseAmount, PPGS.stolenBaseAttemptAmount, PPGS.homePlateAmount," +
-                                    "PG.dateOfGame" +
+                                    "PG.dateOfGame, PPG.sluggingAmount, PPG.onBasePercent, PPG.battingAverage" +
                                 "FROM `Players` P JOIN `Player_Per_Game_Stats` PPGS ON P.`playerID` = PPGS.`playerID`" +
                                     "JOIN `Played_Games` PG ON PPGS.`gameID` = PG.gameID" +
                                     "JOIN `Game_Teams` GT ON PG.`gameID` = GT.`gameID`" +
@@ -167,6 +172,10 @@ public class BatterAppDB {
             int playerLeftOnBase = 0;
             int playerStolenBaseAttempts = 0;
             int playerHomePlate = 0;
+            double sluggingAmount = 0;
+            double onBasePercent = 0;
+            double battingAverage = 0;
+            
                            
             // Execute search query
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -182,8 +191,7 @@ public class BatterAppDB {
                     playerRunsBattedIn = resultSet.getInt("runsBattedInAmount");
                     playerDoubles = resultSet.getInt("doubleAmount");
                     playerTriples = resultSet.getInt("tripleAmount");
-                    playerHomeRuns = resultSet.getInt("homeRunAmount");
-                    playerTotalBases = resultSet.getInt("totalBasesAmount");       
+                    playerHomeRuns = resultSet.getInt("homeRunAmount");   
                     playerStrikeOut = resultSet.getInt("strikeOutAmount");
                     playerBaseOnBalls = resultSet.getInt("baseOnBallsAmount"); 
                     playerSacrificFly = resultSet.getInt("sacrificFlyAmount"); 
@@ -191,10 +199,13 @@ public class BatterAppDB {
                     playerHitByPitch = resultSet.getInt("hitByPitchAmount"); 
                     playerLeftOnBase = resultSet.getInt("leftOnBaseAmount"); 
                     playerStolenBaseAttempts = resultSet.getInt("stolenBaseAttemptAmount"); 
-                    playerHomePlate = resultSet.getInt("homePlateAmount"); 
+                    playerHomePlate = resultSet.getInt("homePlateAmount");
+                    sluggingAmount = resultSet.getDouble("sluggingAmount"); 
+                    onBasePercent = resultSet.getDouble("onBasePercent"); 
+                    battingAverage = resultSet.getDouble("battingAverage"); 
                     
                     Batter b = new Batter(firstName, lastName, playerTeam, playerPosition, playedGameDate, playerAB, playerHits, playerHomeRuns, playerStrikeOut, playerRunsBattedIn, playerRuns,
-                                        playerDoubles, playerTriples, playerTotalBases, playerBaseOnBalls, playerSacrificFly, playerSacrificBunt, 
+                                        playerDoubles, playerTriples, playerBaseOnBalls, playerSacrificFly, playerSacrificBunt, 
                                             playerHitByPitch, playerLeftOnBase, playerStolenBaseAttempts, playerHomePlate);
                     batterMultiGameStats.add(b);
                 }                
@@ -430,10 +441,10 @@ public class BatterAppDB {
         
         String addStatsPerGameQuery = "INSERT INTO Player_Per_Game_Stats (playerID, gameID, playerPosition, atBatAmount, runsAmount, hitsAmount, runsBattedInAmount," +
                                         " baseOnBallsAmount, strikeOutAmount, leftOnBaseAmount, assistsAmount, putOutAmount, homeRunAmount, hitByPitchAmount," +
-                                        " doubleAmount, tripleAmount, totalBasesAmount, homePlateAmount, onBasePercent, sacrificFlyAmount, sacrificBuntAmount, stolenBaseAttemptAmount)" +
+                                        " doubleAmount, tripleAmount, totalBasesAmount, sluggingAmount, homePlateAmount, onBasePercent, sacrificFlyAmount, sacrificBuntAmount, stolenBaseAttemptAmount, battingAverage)" +
                                       " VALUES (?, ?, ?, ?, ?, ?, ?," +
                                          " ?, ?, ?, 0, 0, ?, ?," +
-                                         " ?, ?, ?, ?, 0.0, ?, ?, ?);";
+                                         " ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
         
         try (PreparedStatement preparedStatement = connectToDB().prepareStatement(addStatsPerGameQuery)) {
             
@@ -452,10 +463,13 @@ public class BatterAppDB {
             preparedStatement.setInt(13, b.getDoubles());
             preparedStatement.setInt(14, b.getTriples());
             preparedStatement.setInt(15, b.getTotalBases());
-            preparedStatement.setInt(16, b.getHomePlate());
-            preparedStatement.setInt(17, b.getSacrificFly());
-            preparedStatement.setInt(18, b.getSacrificBunt());
-            preparedStatement.setInt(19, b.getStolenBaseAttempts());
+            preparedStatement.setDouble(16, b.getSluggingAmount());
+            preparedStatement.setInt(17, b.getHomePlate());
+            preparedStatement.setDouble(18, b.getOnBasePerc());
+            preparedStatement.setInt(19, b.getSacrificFly());
+            preparedStatement.setInt(20, b.getSacrificBunt());
+            preparedStatement.setInt(21, b.getStolenBaseAttempts());
+            preparedStatement.setDouble(22, b.getBattingAvg());
             preparedStatement.executeUpdate();
         
             

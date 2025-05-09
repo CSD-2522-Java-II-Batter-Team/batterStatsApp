@@ -412,7 +412,6 @@ public class batterStatsApp extends Application {
                 int doubles = Integer.parseInt(doublesField.getText());
                 int triples = Integer.parseInt(triplesField.getText());
                 int homeRuns = Integer.parseInt(homeRunsField.getText());   
-                int totalBases = Integer.parseInt(totalBasesField.getText());
                 int strikeOuts = Integer.parseInt(strikeOutsField.getText());
                 int baseOnBalls = Integer.parseInt(baseOnBallsField.getText());
                 int sacrificeFlies = Integer.parseInt(sacrificeFliesField.getText());
@@ -427,7 +426,7 @@ public class batterStatsApp extends Application {
                 // create batter object with variables above
                 Batter batter = new Batter(firstName, lastName, batterTeam, "Batter", 
                         formattedDateOfGame, atBats, hits, homeRuns, strikeOuts, rbi, runs, doubles,
-                        triples, totalBases, baseOnBalls, sacrificeFlies, sacrificeBunts, 
+                        triples, baseOnBalls, sacrificeFlies, sacrificeBunts, 
                         hitByPitch, leftOnBase, stolenBases, homePlates);
 
                 // check if the batters team or opponent is currently in the database or not
