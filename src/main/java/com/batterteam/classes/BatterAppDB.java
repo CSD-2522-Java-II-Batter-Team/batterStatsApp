@@ -134,7 +134,7 @@ public class BatterAppDB {
                                     "JOIN `Played_Games` PG ON PPGS.`gameID` = PG.gameID" +
                                     "JOIN `Game_Teams` GT ON PG.`gameID` = GT.`gameID`" +
                                     "JOIN `Teams` T ON GT.`teamID` = T.`teamID`" +
-                               	"WHERE P.`playerFirstName` = 'Brent' AND P.`playerLastName` = 'Todys' AND (PG.dateOfGame BETWEEN ? AND ?) AND T.`teamName` = ?;";
+                               	"WHERE P.`playerFirstName` = ? AND P.`playerLastName` = ? AND (PG.dateOfGame BETWEEN ? AND ?) AND T.`teamName` = ?;";
         
         ArrayList batterMultiGameStats = new ArrayList<Batter>();
                 
@@ -275,7 +275,7 @@ public class BatterAppDB {
         int newPlayerID = -1;
 
         String addBatterQuery = "INSERT INTO Players (playerFirstName, playerLastName, player_teamID) VALUES (?, ?, ?);";
-        String getLastIDQuery = "SELECT last_insert_rowid();";
+        String getLastIDQuery = "SELECT MAX(playerID) FROM Players;";
 
         try (PreparedStatement insertStatement = connectToDB().prepareStatement(addBatterQuery);
              PreparedStatement selectLastIDStatement = connectToDB().prepareStatement(getLastIDQuery)) {
@@ -306,7 +306,7 @@ public class BatterAppDB {
         int newTeamID = -1;
         
         String addTeamQuery = "INSERT INTO Teams (teamName, teamWins, teamLosses) VALUES (?, ?, ?);";
-        String getLastIDQuery = "SELECT last_insert_rowid();";
+        String getLastIDQuery = "SELECT MAX(teamID) FROM Teams;";
                                         
         try (PreparedStatement insertStatement = connectToDB().prepareStatement(addTeamQuery);
              PreparedStatement selectLastIDStatement = connectToDB().prepareStatement(getLastIDQuery)) {
@@ -341,7 +341,7 @@ public class BatterAppDB {
         
         String addGameQuery = "INSERT INTO Played_Games (homeTeam, awayTeam, dateOfGame, winningTeam, venueCity, venueState)" + 
                                 " VALUES (?, ?, ?, ?, ?, ?);";
-        String getLastIDQuery = "SELECT last_insert_rowid();";
+        String getLastIDQuery = "SELECT MAX(gameID) FROM Played_Games;";
         
         try (PreparedStatement insertStatement = connectToDB().prepareStatement(addGameQuery);
              PreparedStatement selectLastIDStatement = connectToDB().prepareStatement(getLastIDQuery)) {
@@ -456,6 +456,7 @@ public class BatterAppDB {
             preparedStatement.setInt(17, b.getSacrificFly());
             preparedStatement.setInt(18, b.getSacrificBunt());
             preparedStatement.setInt(19, b.getStolenBaseAttempts());
+            preparedStatement.executeUpdate();
         
             
         } catch (SQLException e) {

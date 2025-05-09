@@ -382,7 +382,6 @@ public class Batter {
     }
     
     // Method creates a string used to print out batter stats for a report of MULLTIPLE games
-    // TODO: Update method to display a blank message if no stats are found
     public static String batterAsString(Batter b, String dateOfFirstGame, String dateOfLastGame) {
 
         // Get team name from teamID

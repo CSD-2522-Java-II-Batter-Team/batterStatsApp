@@ -17,6 +17,7 @@ Seth I. - 5/7/25 - Resolving issue where report wasn't properly displaying to us
 Lillian H - 5/8/25 - Added data validation to controls
 
 TODO: Figure out why stats per game aren' being added
+TODO: Non-stats related information not clearing on Enter scene
 ======================================
  */
 
@@ -269,6 +270,14 @@ public class batterStatsApp extends Application {
 
     // Method to clear all fields 
     public void clearFields() {
+        firstNameField.clear();
+        lastNameField.clear();
+        teamField.clear();
+        oppTeamField.clear();
+        gameDatePicker.setValue(null);
+        cityField.clear();
+        stateCombo.getSelectionModel().clearSelection();
+        
         atBatsField.clear();
         hitsField.clear();
         runsField.clear();
@@ -439,8 +448,9 @@ public class batterStatsApp extends Application {
                 }
 
                 // add the batter to the DB
-                BatterAppDB.addBatter(batter, batterTeam);
-
+                int newPlayerID = BatterAppDB.addBatter(batter, batterTeam);
+                batter.setPlayerID(newPlayerID);
+                        
                 // add the game to the DB based on who won
                 int gameID;
                 if (winner.equals("Batter's Team")) {
@@ -452,11 +462,7 @@ public class batterStatsApp extends Application {
                     BatterAppDB.addTeamPerGame(gameID, teamExistsBatterTeam, 0);
                     BatterAppDB.addTeamPerGame(gameID, teamExistsOppTeam, 1);
                 }
-
-                Console.println("Found GameID: " + gameID);
-                Console.println("Found teamExistsBatterTeam: " + teamExistsBatterTeam);
-                Console.println("Found teamExistsOppTeam: " + teamExistsOppTeam);
-
+                
                 // add the batter's stats to the DB
                 BatterAppDB.addStatsPerGame(batter, gameID);    
 
