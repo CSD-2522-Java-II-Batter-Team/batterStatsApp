@@ -131,7 +131,7 @@ public class BatterAppDB {
     // Example: If there were 3 batters playing in a single game this array would store those 3 batters.
     public static ArrayList buildBatterTeamObjectsFromDBSingleGame(String dateOfGame) {
         
-        String queryAsString = "SELECT P.playerFirstName, P.playerLastName, PPGS.playerPosition, PPGS.atBatAmount, PPGS.runsAmount," +
+        String queryAsString = "SELECT P.playerFirstName, P.playerLastName, T.teamName, PPGS.playerPosition, PPGS.atBatAmount, PPGS.runsAmount," +
                                     " PPGS.hitsAmount, PPGS.runsBattedInAmount, PPGS.doubleAmount, PPGS.tripleAmount, PPGS.homeRunAmount," +
                                     " PPGS.totalBasesAmount, PPGS.strikeOutAmount, PPGS.baseOnBallsAmount, PPGS.sacrificFlyAmount," +
                                     " PPGS.sacrificBuntAmount, PPGS.hitByPitchAmount, PPGS.leftOnBaseAmount, PPGS.stolenBaseAttemptAmount, PPGS.homePlateAmount," +
@@ -183,7 +183,8 @@ public class BatterAppDB {
                 // Process all rows of queried data until end of file - display as a black
                 while (resultSet.next()) {
                     firstName = resultSet.getString("playerFirstName");
-                    lastName = resultSet.getString("playerLastName");                  
+                    lastName = resultSet.getString("playerLastName");   
+                    playerTeam = resultSet.getString("teamName");
                     playerPosition = resultSet.getString("playerPosition");
                     playedGameDate = resultSet.getString("dateOfGame");
                     playerAB = resultSet.getInt("atBatAmount");

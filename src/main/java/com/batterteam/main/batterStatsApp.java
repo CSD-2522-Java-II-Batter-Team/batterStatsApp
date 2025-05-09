@@ -2,7 +2,7 @@
  * Author Name: Batter Team
  * Date: 4/25/25
  * File Name: batterStatsApp.java
- * Last Update: Tiffany + Lillian - 5/8/25
+ * Last Update: Tiffany - 5/9/25
  * Program Description: Main file AND GUI for batterStatsApp.
  */
 
@@ -16,6 +16,7 @@ Lillian H. - 5/1/2024 - Implemented Tiffany W's report scene layout and made a f
 Seth I. - 5/7/25 - Resolving issue where report wasn't properly displaying to user
 Lillian H - 5/8/25 - Added data validation to controls
 Tiffany + Lillian - 5/8/25 - Improved look of GUI and removed unneccessary buttons
+Tiffany - 5/9/25 - Created GameReport.java and implemented within the GUI.
 
 ======================================
  */
@@ -23,11 +24,8 @@ Tiffany + Lillian - 5/8/25 - Improved look of GUI and removed unneccessary butto
 package com.batterteam.main;
 
 import java.util.Arrays;
-import java.util.ArrayList;
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -47,9 +45,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.layout.Region;
-
-
 
 /**
  * JavaFX batterStatsApp
@@ -60,6 +55,7 @@ public class batterStatsApp extends Application {
     private Scene menuScene;
     private Scene entryScene;
     private Scene reportScene;
+    private Scene gameReportScene;
 
     private TextField firstNameField = new TextField();
     private TextField lastNameField = new TextField();
@@ -99,6 +95,7 @@ public class batterStatsApp extends Application {
         menuScene = createMenuScene();
         entryScene = createEntryScene();
         reportScene = CumulativeReport.getScene(stage, menuScene);
+        gameReportScene = GameReport.getScene(stage, menuScene);
 
         stage.setScene(menuScene);
         stage.show();
@@ -112,23 +109,25 @@ public class batterStatsApp extends Application {
     // Method to create main menu
     private Scene createMenuScene() {
         // Title
-        Text title = new Text("Batter Stats Manager");
+        Text title = new Text("⚾ Batter Stats Manager");
         title.setFont(Font.font("Arial", 24));
         
         // Main menu buttons
         Button enterStatsBtn = new Button("Enter Batter Stats");
+        Button viewPlayerReportBtn = new Button("View Player Report");
         Button viewGameReportBtn = new Button("View Game Report");
         Button helpBtn = new Button("Help");
         Button exitBtn = new Button("Exit");
 
         // Design
         enterStatsBtn.setMinWidth(200);
+        viewPlayerReportBtn.setMinWidth(200);
         viewGameReportBtn.setMinWidth(200);
         helpBtn.setMinWidth(200);
         exitBtn.setMinWidth(200);
 
         // Page layout
-        VBox menuBox = new VBox(15, title, enterStatsBtn, viewGameReportBtn, helpBtn, exitBtn);
+        VBox menuBox = new VBox(15, title, enterStatsBtn, viewPlayerReportBtn, viewGameReportBtn, helpBtn, exitBtn);
         menuBox.setAlignment(Pos.CENTER);
         menuBox.setPadding(new Insets(40));
 
@@ -139,13 +138,15 @@ public class batterStatsApp extends Application {
         enterStatsBtn.setOnAction(e -> {
             switchScenes(entryScene);
         });
-               
+        
         // Show an information alert 
         helpBtn.setOnAction(e -> showHelpAlert());
 
         // Show report scene
-        viewGameReportBtn.setOnAction(e -> switchScenes(reportScene));
+        viewPlayerReportBtn.setOnAction(e -> switchScenes(reportScene));
         
+         //Game report scene
+        viewGameReportBtn.setOnAction(e -> switchScenes(gameReportScene));
         // Scene Setup
         return new Scene(menuBox, 400, 300);
     }
@@ -258,6 +259,21 @@ public class batterStatsApp extends Application {
 
         return new Scene(grid);
     }
+    
+    public Scene createGameReportScene() {
+        VBox layout = new VBox(10);
+        layout.setPadding(new Insets(20));
+        layout.setAlignment(Pos.CENTER);
+
+        Label title = new Label("📋 Game Report (Coming Soon)");
+        Button backButton = new Button("Back to Menu");
+        backButton.setOnAction(e -> switchScenes(menuScene));
+
+        layout.getChildren().addAll(title, backButton);
+
+        return new Scene(layout, 400, 300);
+    }
+
     
     // Method to switch scenes
     public void switchScenes(Scene scene) {
