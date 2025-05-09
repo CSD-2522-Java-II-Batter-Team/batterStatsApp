@@ -2,13 +2,14 @@
  * Author: Batter Team
  * Date: 4/30/2025
  * File Name: CumulativeReport.java
- * Last Updated By: Tiffany W.
+ * Last Updated By: 5/9/25 - Seth I.
  * Program Description: 
  */
 
 /*
 ============= CHANGE LOG =============
-TODO: Add reset feature to clear whatever user entered after they've generated a report
+Tiffany - 5/8/25 - Consolidated Scene from batterStatsApp into CumulativeReport
+Seth I - 5/9/25 - Added (then commented out) code around lines 151-161 for testing of a new report message.
 
 ======================================
  */
@@ -28,6 +29,7 @@ import javafx.scene.text.Font;
 import javafx.print.PrinterJob;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import java.util.ArrayList;
 
 public class CumulativeReport {
     
@@ -151,6 +153,14 @@ public class CumulativeReport {
                 }
 
                 message = Batter.batterAsString(searchedPlayer, date.toString());
+
+                // ==================== CODE FOR REPORT OF MULTIPLE BATTER IN A SINGLE GAME ======================
+                //// Create Array of all batters in a single game
+                //ArrayList batterTeam = BatterAppDB.buildBatterTeamObjectsFromDBSingleGame(date.toString());
+                //// Create report message
+                //message = Batter.battersTeamAsString(batterTeam, date.toString());
+                // ==================== CODE FOR REPORT OF MULTIPLE BATTER IN A SINGLE GAME ======================
+                
                 printReport = message;
 
 
@@ -170,7 +180,7 @@ public class CumulativeReport {
                     return;
                 }
 
-                message = Batter.batterAsString(searchedPlayer, start.toString(), end.toString());
+                message = Batter.batterAsString(searchedPlayer, start.toString(), end.toString());               
                 printReport = message;
 
             }

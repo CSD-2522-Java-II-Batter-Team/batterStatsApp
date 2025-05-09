@@ -2,7 +2,7 @@
  * Author Name: Batter Team
  * Date: 4/30/25
  * File Name: BatterAppDB.java
- * Last Update: 5/03/25 by Seth I.
+ * Last Update: 5/09/25 by Seth I.
  * Program Description: Class that contains methods to manipulate a SQlite database as well as connect to it.
  */
 
@@ -11,6 +11,7 @@
 5/03/25 - Seth I. - After updating database file I updated methods buildBatterObjectFromDBSingleGame AND viewStatsSingleGame to reflect db change
 5/04/25 - Seth I. - Added several methods to display, add, and update information from database. 
 5/06/25 - Seth I. - Added methods to retrieve gameIDs and dates
+5/09/25 - Seth I. - Repurposed unused code to now generate an ArrayList of Batters who played in a single team buildBatterTeamObjectsFromDBSingleGame
 
 ======================================
  */
@@ -126,36 +127,35 @@ public class BatterAppDB {
         return null;
     }
     
-    // Function saves an array of Batter objects with each Batter object contains stats of a singular batter from a singular game.
-    // EXAMPLE: If Babe Ruth played 10 games...this would return 10 Babe Ruth objects each with different stats per object. 
-    public static ArrayList buildFullBatterObjectsFromDBMultiGame(String firstName, String lastName, String firstGameDate, String lastGameDate, String teamName) {
+    // Function saves an array of Batter objects with each Batter object contains stats of a different batter from a singular game.
+    // Example: If there were 3 batters playing in a single game this array would store those 3 batters.
+    public static ArrayList buildBatterTeamObjectsFromDBSingleGame(String dateOfGame) {
         
-        String queryAsString = "SELECT P.playerFirstName, P.playerLastName, T.teamName, PPGS.playerPosition, PPGS.atBatAmount, PPGS.runsAmount," +
-                                    "PPGS.hitsAmount, PPGS.runsBattedInAmount, PPGS.doubleAmount, PPGS.tripleAmount, PPGS.homeRunAmount," +
-                                    "PPGS.totalBasesAmount, PPGS.strikeOutAmount, PPGS.baseOnBallsAmount, PPGS.sacrificFlyAmount," +
-                                    "PPGS.sacrificBuntAmount, PPGS.hitByPitchAmount, PPGS.leftOnBaseAmount, PPGS.stolenBaseAttemptAmount, PPGS.homePlateAmount," +
-                                    "PG.dateOfGame, PPG.sluggingAmount, PPG.onBasePercent, PPG.battingAverage" +
-                                "FROM `Players` P JOIN `Player_Per_Game_Stats` PPGS ON P.`playerID` = PPGS.`playerID`" +
-                                    "JOIN `Played_Games` PG ON PPGS.`gameID` = PG.gameID" +
-                                    "JOIN `Game_Teams` GT ON PG.`gameID` = GT.`gameID`" +
-                                    "JOIN `Teams` T ON GT.`teamID` = T.`teamID`" +
-                               	"WHERE P.`playerFirstName` = ? AND P.`playerLastName` = ? AND (PG.dateOfGame BETWEEN ? AND ?) AND T.`teamName` = ?;";
+        String queryAsString = "SELECT P.playerFirstName, P.playerLastName, PPGS.playerPosition, PPGS.atBatAmount, PPGS.runsAmount," +
+                                    " PPGS.hitsAmount, PPGS.runsBattedInAmount, PPGS.doubleAmount, PPGS.tripleAmount, PPGS.homeRunAmount," +
+                                    " PPGS.totalBasesAmount, PPGS.strikeOutAmount, PPGS.baseOnBallsAmount, PPGS.sacrificFlyAmount," +
+                                    " PPGS.sacrificBuntAmount, PPGS.hitByPitchAmount, PPGS.leftOnBaseAmount, PPGS.stolenBaseAttemptAmount, PPGS.homePlateAmount," +
+                                    " PG.dateOfGame, PPGS.sluggingAmount, PPGS.onBasePercent, PPGS.battingAverage" +
+                                " FROM `Players` P JOIN `Player_Per_Game_Stats` PPGS ON P.`playerID` = PPGS.`playerID`" +
+                                    " JOIN `Played_Games` PG ON PPGS.`gameID` = PG.gameID" +
+                                    " JOIN `Game_Teams` GT ON PG.`gameID` = GT.`gameID`" +
+                                    " JOIN `Teams` T ON GT.`teamID` = T.`teamID`" +
+                               	" WHERE PG.dateOfGame = ? AND (PPGS.playerPosition = 'Batter' OR PPGS.playerPosition = 'Designated Hitter')" + 
+                                " GROUP BY P.playerLastName";
         
         ArrayList batterMultiGameStats = new ArrayList<Batter>();
                 
         try (PreparedStatement preparedStatement = connectToDB().prepareStatement(queryAsString)) {
 
             // Create prepared statement searching for player by last name
-            preparedStatement.setString(1, firstName);
-            preparedStatement.setString(2, lastName);
-            preparedStatement.setString(3, firstGameDate);
-            preparedStatement.setString(4, lastGameDate);
-            preparedStatement.setString(5, teamName);
+            preparedStatement.setString(1, dateOfGame);
 
             // Initialize variables for object creation
-            String playerTeam = "";
+            String firstName = "";
+            String lastName = "";
             String playerPosition = "";
             String playedGameDate = "";
+            String playerTeam = " ";
             int playerAB = 0;
             int playerRuns = 0;
             int playerHits = 0;
@@ -182,7 +182,8 @@ public class BatterAppDB {
 
                 // Process all rows of queried data until end of file - display as a black
                 while (resultSet.next()) {
-                    playerTeam = resultSet.getString("teamName");
+                    firstName = resultSet.getString("playerFirstName");
+                    lastName = resultSet.getString("playerLastName");                  
                     playerPosition = resultSet.getString("playerPosition");
                     playedGameDate = resultSet.getString("dateOfGame");
                     playerAB = resultSet.getInt("atBatAmount");
@@ -202,7 +203,7 @@ public class BatterAppDB {
                     playerHomePlate = resultSet.getInt("homePlateAmount");
                     sluggingAmount = resultSet.getDouble("sluggingAmount"); 
                     onBasePercent = resultSet.getDouble("onBasePercent"); 
-                    battingAverage = resultSet.getDouble("battingAverage"); 
+                    battingAverage = resultSet.getDouble("battingAverage");       
                     
                     Batter b = new Batter(firstName, lastName, playerTeam, playerPosition, playedGameDate, playerAB, playerHits, playerHomeRuns, playerStrikeOut, playerRunsBattedIn, playerRuns,
                                         playerDoubles, playerTriples, playerBaseOnBalls, playerSacrificFly, playerSacrificBunt, 
@@ -212,10 +213,10 @@ public class BatterAppDB {
                 return batterMultiGameStats;
                 
             } catch (SQLException e) {
-                System.out.println("buildFullBatter " + e);
+                System.out.println("buildTeamBatter " + e);
             }
         } catch (SQLException e) {
-            System.out.println("buildFullBatter " + e);
+            System.out.println("buildTeamBatter " + e);
         }
         return null;
     }

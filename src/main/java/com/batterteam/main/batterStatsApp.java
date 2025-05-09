@@ -2,7 +2,7 @@
  * Author Name: Batter Team
  * Date: 4/25/25
  * File Name: batterStatsApp.java
- * Last Update: Seth I. - 5/7/25
+ * Last Update: Tiffany + Lillian - 5/8/25
  * Program Description: Main file AND GUI for batterStatsApp.
  */
 
@@ -15,9 +15,8 @@ Seth I. - 4/30/25 - Added import statement for classes package.
 Lillian H. - 5/1/2024 - Implemented Tiffany W's report scene layout and made a few modifications to GUI
 Seth I. - 5/7/25 - Resolving issue where report wasn't properly displaying to user
 Lillian H - 5/8/25 - Added data validation to controls
+Tiffany + Lillian - 5/8/25 - Improved look of GUI and removed unneccessary buttons
 
-TODO: Figure out why stats per game aren' being added
-TODO: Non-stats related information not clearing on Enter scene
 ======================================
  */
 
@@ -83,7 +82,6 @@ public class batterStatsApp extends Application {
     private TextField sacrificeFliesField = new TextField();
     private TextField sacrificeBuntsField = new TextField();
     private TextField hitByPitchField = new TextField();
-    private TextField totalBasesField = new TextField();
     private TextField leftOnBasesField = new TextField();
     private TextField stolenBasesField = new TextField();
     private TextField homePlatesField = new TextField();
@@ -201,8 +199,7 @@ public class batterStatsApp extends Application {
         grid.add(new Label("Sacrifice Bunts:"), 2, 9);
         grid.add(new Label("Hit By Pitches:"), 2, 10);
         grid.add(new Label("Left on Base:"), 2, 11);
-        grid.add(new Label("Total Bases:"), 0, 13);
-        grid.add(new Label("Home Plates:"), 2, 13);
+        grid.add(new Label("Home Plates:"), 0, 13);
         grid.add(new Label("Stolen Bases:"), 2, 12);
         grid.add(new Label("Winning Team: "), 0, 14);
   
@@ -219,7 +216,6 @@ public class batterStatsApp extends Application {
         grid.add(doublesField, 1, 10);
         grid.add(triplesField, 1, 11);
         grid.add(homeRunsField, 1, 12);       
-        grid.add(totalBasesField, 1, 13);
         grid.add(cityField, 3, 2);
         grid.add(strikeOutsField, 3, 6);
         grid.add(baseOnBallsField, 3, 7);
@@ -228,7 +224,7 @@ public class batterStatsApp extends Application {
         grid.add(hitByPitchField, 3, 10);
         grid.add(leftOnBasesField, 3, 11);
         grid.add(stolenBasesField, 3, 12);
-        grid.add(homePlatesField, 3, 13);
+        grid.add(homePlatesField, 1, 13);
 
         // Date Picker
         gameDatePicker.setPromptText("mm/dd/yyyy");
@@ -287,7 +283,6 @@ public class batterStatsApp extends Application {
         strikeOutsField.clear();
         walksField.clear();
         rbiField.clear();
-        totalBasesField.clear();
         sacrificeFliesField.clear();
         sacrificeBuntsField.clear();
         hitByPitchField.clear();
@@ -335,7 +330,6 @@ public class batterStatsApp extends Application {
         doublesField.setMaxSize(50, 50);
         triplesField.setMaxSize(50, 50);
         homeRunsField.setMaxSize(50, 50);
-        totalBasesField.setMaxSize(50, 50);
         strikeOutsField.setMaxSize(50, 50);
         baseOnBallsField.setMaxSize(50, 50);
         sacrificeFliesField.setMaxSize(50, 50);
@@ -385,7 +379,6 @@ public class batterStatsApp extends Application {
             errorMsg += v.isInteger(doublesField.getText(), "Doubles");
             errorMsg += v.isInteger(triplesField.getText(), "Triples");
             errorMsg += v.isInteger(homeRunsField.getText(), "Home Runs");
-            errorMsg += v.isInteger(totalBasesField.getText(), "Total Bases");
             errorMsg += v.isInteger(strikeOutsField.getText(), "Strike Outs");
             errorMsg += v.isInteger(baseOnBallsField.getText(), "Base on Balls");
             errorMsg += v.isInteger(sacrificeFliesField.getText(), "Sacrifice Flies");
