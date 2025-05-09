@@ -592,6 +592,52 @@ public class BatterAppDB {
         return 999;
     }
     
+    // Returns True or False if a game was or wasn't played on dateOfGame
+    public static Boolean checkIfGameExists(String dateOfGame) {
+        try (PreparedStatement preparedStatement = connectToDB().prepareStatement("SELECT `gameID` FROM `Played_Games` WHERE `dateOfGame` = ?")) {
+
+            // Create prepared statement searching for gameID based on date
+            preparedStatement.setString(1, dateOfGame);
+
+            // Execute search query
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                // Process row of queried data until end of file - display as a black
+                if (resultSet.next() == false) return false;
+                else return true;             
+                
+            } catch (SQLException e) {
+                System.out.println("checkIfGameExists " + e);
+            }
+        } catch (SQLException e) {
+            System.out.println("checkIfGameExists " + e);            
+        }
+        return false;
+    }
+    
+    // Returns True or False if a game was or wasn't played on dateOfGame
+    public static Boolean checkIfGameExistsBetween(String firstDate, String secondDate) {
+        try (PreparedStatement preparedStatement = connectToDB().prepareStatement("SELECT `gameID` FROM `Played_Games` WHERE `dateOfGame` BETWEEN ? AND ?")) {
+
+            // Create prepared statement searching for gameID based on date
+            preparedStatement.setString(1, firstDate);
+            preparedStatement.setString(2, secondDate);
+
+            // Execute search query
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                // Process row of queried data until end of file - display as a black
+                if (resultSet.next() == false) return false;
+                else return true;             
+                
+            } catch (SQLException e) {
+                System.out.println("checkIfGameExists " + e);
+            }
+        } catch (SQLException e) {
+            System.out.println("checkIfGameExists " + e);            
+        }
+        return false;
+    }
 }
 
 

@@ -25,7 +25,7 @@ import java.util.ArrayList;
 
 public class Batter {
     
-    // Class Vriables
+    // Class Variables
     private int playerID;
     private String playerName;
     private String playerFirstName;
@@ -335,74 +335,24 @@ public class Batter {
 
         // Get team name from teamID
         String teamName = BatterAppDB.getTeamFromTeamID(b.getTeamID());
+        
         // Create a full batter WITH statistics from a single game for us to display
         Batter batter = BatterAppDB.buildFullBatterObjectFromDBSingleGame(b.getPlayerFirstName(), b.getPlayerLastName(), dateOfGame, teamName);
         
-        // TODO: Add IF/ELSE statement to return a message if no-stats were tracked for game date (Check for a valid gameID)
-        
-        // Initalize String
-        String batterString = "";
-        batterString += "=== " + batter.getPlayerFirstName() + "'s Stats ===\n";
-        batterString += "=== For Game Played: " + dateOfGame + " ===\n";
-        batterString += "First Name: " + batter.getPlayerFirstName() + "\n";
-        batterString += "Last Name: " + batter.getPlayerLastName() + "\n";
-        batterString += "Team: " + teamName + "\n";
-        batterString += "Played Position: " + batter.getPlayerPosition() + "\n";
-        
-        // String to be used in the String.format() method to ensure stats are displayed in even rows of three columns.
-        String formatForThreeLabels = "%-15s%s %-15s%s %-15s%s%n"; 
-        
-        // Display stats as multiple rows of three variables
-        batterString += String.format(formatForThreeLabels,
-            "AB: ", String.valueOf(batter.getAtBats()),
-            "H: ", String.valueOf(batter.getHits()),
-            "HR: ", String.valueOf(batter.getHomeRuns()));
-        batterString += String.format(formatForThreeLabels,
-            "SO: ", String.valueOf(batter.getStrikeOuts()),
-            "R: ", String.valueOf(batter.getRuns()),
-            "RBI: ", String.valueOf(batter.getRBI()));
-        batterString += String.format(formatForThreeLabels,
-            "2B: ", String.valueOf(batter.getDoubles()),
-            "3B: ", String.valueOf(batter.getTriples()),
-            "TB: ", String.valueOf(batter.getTotalBases()));
-        batterString += String.format(formatForThreeLabels,
-            "HP: ", String.valueOf(batter.getHomePlate()),
-            "BB: ", String.valueOf(batter.getBasesOnBalls()),
-            "SF: ", String.valueOf(batter.getSacrificFly()));
-        batterString += String.format(formatForThreeLabels,
-            "SB: ", String.valueOf(batter.getSacrificBunt()),
-            "HBP: ", String.valueOf(batter.getHitByPitch()),
-            "LOB: ", String.valueOf(batter.getLeftOnBase()));
-        batterString += String.format("%-15s%s%n", "SB-ATT: ", String.valueOf(batter.getStolenBaseAttempts()));
-        
-        return batterString;
-    }
-    
-    // Method creates a string used to print out batter stats for a report of MULLTIPLE games
-    public static String batterAsString(Batter b, String dateOfFirstGame, String dateOfLastGame) {
-
-        // Get team name from teamID
-        String teamName = BatterAppDB.getTeamFromTeamID(b.getTeamID());
-        
-        // Create an array of game dates found between dateOfFirstGame and dateOfLastGame
-        ArrayList gameDateArray = BatterAppDB.getGameDateArrayInRange(dateOfFirstGame, dateOfLastGame);
-        
-        // Initalize String
-        String batterString = "=== " + b.getPlayerFirstName() + "'s Stats ===\n";  
-        batterString += "First Name: " + b.getPlayerFirstName() + "\n";
-        batterString += "Last Name: " + b.getPlayerLastName() + "\n";
-        batterString += "Team: " + teamName + "\n";
-        
-        for (var date : gameDateArray) {
-
-            // Create a full batter WITH statistics from a single game for us to display
-            Batter batter = BatterAppDB.buildFullBatterObjectFromDBSingleGame(b.getPlayerFirstName(), b.getPlayerLastName(), (String)date, teamName);    
+        // Check if a game was actually played on dateOfGame and if so...create string message
+        if (BatterAppDB.checkIfGameExists(dateOfGame)) {
             
-            batterString += "=== For Game Played: " + date + " ===\n";         
-            batterString += "Played Position: " + batter.getPlayerPosition() + "\n";
+            // Initalize String
+            String batterString = "";
+            batterString += "=== " + batter.getPlayerFirstName() + "'s Stats ===\n";
+            batterString += "=== For Game Played: " + dateOfGame + " ===\n";
+            batterString += "First Name: " + batter.getPlayerFirstName() + "\n";
+            batterString += "Last Name: " + batter.getPlayerLastName() + "\n";
+            batterString += "Team: " + teamName + "\n";
+            batterString += "Played Position: " + batter.getPlayerPosition() + "\n\n";
 
             // String to be used in the String.format() method to ensure stats are displayed in even rows of three columns.
-            String formatForThreeLabels = "%-15s%s %-15s%s %-15s%s%n"; 
+            String formatForThreeLabels = "%-7s%-4s   %-7s%-4s   %-7s%-4s%n"; 
 
             // Display stats as multiple rows of three variables
             batterString += String.format(formatForThreeLabels,
@@ -425,9 +375,66 @@ public class Batter {
                 "SB: ", String.valueOf(batter.getSacrificBunt()),
                 "HBP: ", String.valueOf(batter.getHitByPitch()),
                 "LOB: ", String.valueOf(batter.getLeftOnBase()));
-            batterString += String.format("%-15s%s%n", "SB-ATT: ", String.valueOf(batter.getStolenBaseAttempts()));
-        }
+            batterString += String.format("%-7s%-4s%n", "SB-ATT: ", String.valueOf(batter.getStolenBaseAttempts()));
+
+            return batterString;
+        } else return "NO RECORDS FOUND!\n" + b.getPlayerFirstName() + " " + b.getPlayerLastName() + " didn't play on " + dateOfGame;
+    }
+    
+    // Method creates a string used to print out batter stats for a report of MULLTIPLE games
+    // TODO: Update method to display a blank message if no stats are found
+    public static String batterAsString(Batter b, String dateOfFirstGame, String dateOfLastGame) {
+
+        // Get team name from teamID
+        String teamName = BatterAppDB.getTeamFromTeamID(b.getTeamID());
         
-        return batterString;
+        if (BatterAppDB.checkIfGameExistsBetween(dateOfFirstGame, dateOfLastGame)) {
+        
+            // Create an array of game dates found between dateOfFirstGame and dateOfLastGame
+            ArrayList gameDateArray = BatterAppDB.getGameDateArrayInRange(dateOfFirstGame, dateOfLastGame);
+
+            // Initalize String
+            String batterString = "=== " + b.getPlayerFirstName() + "'s Stats ===\n";  
+            batterString += "First Name: " + b.getPlayerFirstName() + "\n";
+            batterString += "Last Name: " + b.getPlayerLastName() + "\n";
+            batterString += "Team: " + teamName + "\n\n";
+
+            for (var date : gameDateArray) {
+
+                // Create a full batter WITH statistics from a single game for us to display
+                Batter batter = BatterAppDB.buildFullBatterObjectFromDBSingleGame(b.getPlayerFirstName(), b.getPlayerLastName(), (String)date, teamName);    
+
+                batterString += "=== For Game Played: " + date + " ===\n";         
+                batterString += "Played Position: " + batter.getPlayerPosition() + "\n";
+
+                // String to be used in the String.format() method to ensure stats are displayed in even rows of three columns.
+                String formatForThreeLabels = "%-7s%-4s   %-7s%-4s   %-7s%-4s%n";
+
+                // Display stats as multiple rows of three variables
+                batterString += String.format(formatForThreeLabels,
+                    "AB: ", String.valueOf(batter.getAtBats()),
+                    "H: ", String.valueOf(batter.getHits()),
+                    "HR: ", String.valueOf(batter.getHomeRuns()));
+                batterString += String.format(formatForThreeLabels,
+                    "SO: ", String.valueOf(batter.getStrikeOuts()),
+                    "R: ", String.valueOf(batter.getRuns()),
+                    "RBI: ", String.valueOf(batter.getRBI()));
+                batterString += String.format(formatForThreeLabels,
+                    "2B: ", String.valueOf(batter.getDoubles()),
+                    "3B: ", String.valueOf(batter.getTriples()),
+                    "TB: ", String.valueOf(batter.getTotalBases()));
+                batterString += String.format(formatForThreeLabels,
+                    "HP: ", String.valueOf(batter.getHomePlate()),
+                    "BB: ", String.valueOf(batter.getBasesOnBalls()),
+                    "SF: ", String.valueOf(batter.getSacrificFly()));
+                batterString += String.format(formatForThreeLabels,
+                    "SB: ", String.valueOf(batter.getSacrificBunt()),
+                    "HBP: ", String.valueOf(batter.getHitByPitch()),
+                    "LOB: ", String.valueOf(batter.getLeftOnBase()));
+                batterString += String.format("%-7s%-4s%n%n", "SB-ATT: ", String.valueOf(batter.getStolenBaseAttempts()));
+            }
+
+            return batterString;
+        } else return "NO RECORDS FOUND!\n" + b.getPlayerFirstName() + " " + b.getPlayerLastName() + " didn't play between " + dateOfFirstGame + " and " + dateOfLastGame;
     }
 }

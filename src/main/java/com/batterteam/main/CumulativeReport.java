@@ -15,6 +15,8 @@ TODO: Add reset feature to clear whatever user entered after they've generated a
 
 package com.batterteam.main;
 
+import com.batterteam.classes.Batter;
+import com.batterteam.classes.BatterAppDB;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -22,20 +24,40 @@ import javafx.stage.Stage;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import java.time.LocalDate;
+import javafx.scene.text.Font;
+import javafx.print.PrinterJob;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 
 public class CumulativeReport {
+    
+    private static String printReport = "";
 
     public static Scene getScene(Stage primaryStage, Scene mainMenuScene) {
-        Label titleLabel = new Label("Cumulative Player Stats");
+        Label titleLabel = new Label("📊 Cumulative Player Stats");
+        titleLabel.setFont(Font.font("Arial", 20));
+        titleLabel.setStyle("-fx-font-weight: bold;");
 
         // First and Last name text fields
         TextField firstNameField = new TextField();
         firstNameField.setPromptText("First Name");
+        firstNameField.setPrefWidth(120);
         TextField lastNameField = new TextField();
         lastNameField.setPromptText("Last Name");
+        lastNameField.setPrefWidth(120);
+        TextField teamNameField = new TextField();
+        teamNameField.setPromptText("Team Name");
+        teamNameField.setPrefWidth(150);
         
-        HBox nameBox = new HBox(10, firstNameField, lastNameField);
+        HBox nameBox = new HBox(10, firstNameField, lastNameField, teamNameField);
         nameBox.setAlignment(Pos.CENTER);
+        
+        Label nameLabel = new Label("Player Info:");
+        nameLabel.setStyle("-fx-font-weight: bold");
+        nameLabel.setAlignment(Pos.CENTER);
+        
+        VBox nameSection = new VBox(5, nameLabel, nameBox);
+        nameSection.setAlignment(Pos.CENTER);
 
         // Radio buttons for single or multiple games
         RadioButton singleGameRadio = new RadioButton("Single Game");
@@ -69,24 +91,50 @@ public class CumulativeReport {
             singleGameDate.setVisible(false);
             multiDateBox.setVisible(true);
         });
+        
+        Label dateLabel = new Label("Game Date(s):");
+        dateLabel.setStyle("-fx-font-weight: bold");
+        dateLabel.setAlignment(Pos.CENTER);
+
+        HBox singleDateBox = new HBox(singleGameDate);
+        singleDateBox.setAlignment(Pos.CENTER);
+
+        VBox dateSection = new VBox(10, dateLabel, radioBox, singleDateBox, multiDateBox);
+        dateSection.setAlignment(Pos.CENTER_LEFT);
 
         // Buttons
         Button viewReportButton = new Button("View Report");
+        Button printButton = new Button("Print Report");
         Button backButton = new Button("Back");
+        Button resetButton = new Button("Reset");
+        
+        HBox buttonBox = new HBox(15, viewReportButton, printButton, resetButton, backButton);
+        buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.setPadding(new Insets(10));
         
         // Error message if full name is not entered
         viewReportButton.setOnAction(e -> {
             String first = firstNameField.getText().trim();
             String last = lastNameField.getText().trim();
+            String teamName = teamNameField.getText().trim();
+            
+            // Get teamID based on the user entered team name
+            int teamID = BatterAppDB.getTeamIDFromTeamName(teamName);
 
+            // Display an alert is any text field is empty
             if (first.isEmpty() || last.isEmpty()) {
                 showAlert("Enter both first and last name.");
                 return;
+            } 
+            if (teamName.isEmpty()) {
+                showAlert("Enter a team name.");
+                return;
             }
 
-            String message;
+            // Initalize message used in report
+            String message = "";
 
-            // Error message if date is not selected
+            // ==== FOR SINGLE GAME DATE ====
             if (singleGameRadio.isSelected()) {
                 LocalDate date = singleGameDate.getValue();
                 if (date == null) {
@@ -94,14 +142,19 @@ public class CumulativeReport {
                     return;
                 }
 
-                //Format for report
-                if (first.equalsIgnoreCase("Test") && last.equalsIgnoreCase("Player")) {
-                    message = "Showing stats for " + first + " " + last +
-                              "\nGame Date: " + date +
-                              "\nHits: 2, AVG: .400";
-                } else {
-                    message = "No stats found for " + first + " " + last + " on " + date + ".";
+                
+                Batter searchedPlayer = new Batter(first, last, teamID);
+
+                if (searchedPlayer == null) {
+                    showAlert("No stats found for " + first + " " + last + " on " + date + ".");
+                    return;
                 }
+
+                message = Batter.batterAsString(searchedPlayer, date.toString());
+                printReport = message;
+
+
+            // ==== FOR MULTIPLE GAME DATES ====
             } else {
                 LocalDate start = startDate.getValue();
                 LocalDate end = endDate.getValue();
@@ -110,15 +163,16 @@ public class CumulativeReport {
                     return;
                 }
 
-                // Testing report pop-up
-                if (first.equalsIgnoreCase("Test") && last.equalsIgnoreCase("Player")) {
-                    message = "Cumulative stats for " + first + " " + last +
-                              "\nFrom " + start + " to " + end +
-                              "\nHits: 12, AVG: .375";
-                } else {
-                    message = "No stats found for " + first + " " + last +
-                              " between " + start + " and " + end + ".";
+                Batter searchedPlayer = new Batter(first, last, teamID);
+
+                if (searchedPlayer == null) {
+                    showAlert("No stats found for " + first + " " + last + " between " + start.toString() + "and " + end.toString());
+                    return;
                 }
+
+                message = Batter.batterAsString(searchedPlayer, start.toString(), end.toString());
+                printReport = message;
+
             }
 
             // Show the message in a popup window
@@ -128,7 +182,40 @@ public class CumulativeReport {
             popup.setContentText(message);
             popup.showAndWait();
         });
+        
+        printButton.setOnAction(e -> {
+            if (printReport.isEmpty()) {
+                showAlert("Please generate a report before printing.");
+                return;
+            }
 
+            //Print Area
+            Text text = new Text(printReport);
+            text.setWrappingWidth(500);
+            TextFlow textFlow = new TextFlow(text);
+            textFlow.setPadding(new Insets(20));
+
+
+            PrinterJob job = PrinterJob.createPrinterJob();
+            if (job != null && job.showPrintDialog(primaryStage)) {
+                boolean success = job.printPage(textFlow);
+                if (success) {
+                    job.endJob();
+                } else {
+                    showAlert("Failed to print the report.");
+                }
+            }
+        });
+
+
+        resetButton.setOnAction(e -> {
+            firstNameField.clear();
+            lastNameField.clear();
+            teamNameField.clear();
+            singleGameDate.setValue(null);
+            startDate.setValue(null);
+            endDate.setValue(null);
+        });
 
         backButton.setOnAction(e -> primaryStage.setScene(mainMenuScene));
 
@@ -138,12 +225,9 @@ public class CumulativeReport {
         layout.setAlignment(Pos.CENTER);
         layout.getChildren().addAll(
             titleLabel,
-            nameBox,
-            radioBox,
-            singleGameDate,
-            multiDateBox,
-            viewReportButton,
-            backButton
+            nameSection,
+            dateSection,
+            buttonBox
         );
 
         // Screen size
