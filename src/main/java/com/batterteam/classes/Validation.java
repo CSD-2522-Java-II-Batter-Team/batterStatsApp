@@ -10,6 +10,7 @@
 ============= CHANGE LOG =============
 Seth I - 5/9/25 - Added methods to validate Strings and ensure they are formatted with a capital letter at the start and then lowercase afterwards.
 Seth I - 5/9/25 - Updated integer and double methods to ensure the retrieved value is positive.
+Tiffany - 5/9/25 - Created isAlpha() to validate if a string is only alphabetical characters
 
 ======================================
  */
@@ -35,6 +36,14 @@ public class Validation {
         }
         return msg;
     }
+    
+    public String isAlpha(String value, String fieldName) {
+        if (!value.matches("[a-zA-Z\\s]+")) {
+            return fieldName + " must contain only letters.\n";
+        }
+        return "";
+    }
+
 
     public String isDouble(String value, String name) {
         String msg = "";

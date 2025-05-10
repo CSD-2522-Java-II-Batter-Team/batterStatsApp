@@ -18,6 +18,7 @@ Lillian H - 5/8/25 - Added data validation to controls
 Tiffany + Lillian - 5/8/25 - Improved look of GUI and removed unneccessary buttons
 Tiffany - 5/9/25 - Created GameReport.java and implemented within the GUI.
 Seth I. - 5/9/25 - Incorporated more data validation to ensure String values are consistent with database's expectations.
+Tiffany - 5/9/25 - Added validation for name and city variables entered by user
 
 ======================================
  */
@@ -372,13 +373,18 @@ public class batterStatsApp extends Application {
             Validation v = new Validation();
             String errorMsg = "";
             errorMsg += v.isPresent(firstNameField.getText(), "First Name");
-            errorMsg += v.isPresent(lastNameField.getText(), "Last Name");
-            errorMsg += v.isPresent(teamField.getText(), "Batter's Team");
-            String state = stateCombo.getSelectionModel().getSelectedItem();
+            errorMsg += v.isAlpha(firstNameField.getText(), "First Name");
 
+            errorMsg += v.isPresent(lastNameField.getText(), "Last Name");
+            errorMsg += v.isAlpha(lastNameField.getText(), "Last Name");
+
+            errorMsg += v.isPresent(teamField.getText(), "Batter's Team"); // optional: validate this too
+
+            String state = stateCombo.getSelectionModel().getSelectedItem();
             if (state == null) {
                 errorMsg += "State is required.\n";
             }
+
 
             errorMsg += v.isPresent(oppTeamField.getText(), "Opponent Team");
             LocalDate dateOfGameLocal = gameDatePicker.getValue();
@@ -388,6 +394,8 @@ public class batterStatsApp extends Application {
             } 
 
             errorMsg += v.isPresent(cityField.getText(), "Venue City");
+            errorMsg += v.isAlpha(cityField.getText(), "Venue City");
+
             errorMsg += v.isInteger(atBatsField.getText(), "At Bats");
             errorMsg += v.isInteger(runsField.getText(), "Runs");
             errorMsg += v.isInteger(hitsField.getText(), "Hits");
