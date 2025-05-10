@@ -3,6 +3,7 @@ com\batterteam\classes\Batter.class
 com\batterteam\classes\Console.class
 com\batterteam\main\SystemInfo.class
 com\batterteam\classes\Validation.class
+com\batterteam\main\GameReport.class
 com\batterteam\main\batterStatsApp.class
 com\batterteam\classes\BatterAppDB.class
 com\batterteam\main\CumulativeReport.class

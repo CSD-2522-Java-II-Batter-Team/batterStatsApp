@@ -16,6 +16,7 @@ Seth I. - 5/04/25 - Added setters and getters for newely added variables
 Seth I. - 5/06/25 - Added a new constructor for batter with just essential database variables + added teamID class variable
 Seth I. - 5/06/25 - Modified batterAsString() methods to work with new constructor
 Seth I. - 5/09/25 - Added new variables for averages tracking, added several new getters and setters, added new methods for report generating and calculations (thanks team for the formulas!)
+Seth I. - 5/09/25 - Forced a zero in calcSlug method to prevent divide by zero errors
 
 ======================================
  */
@@ -381,6 +382,8 @@ public class Batter {
     
     // Method returns the on-base percentage of a batter as a decimal
     public static double calcSluggingPercent(int totalBases, int atBats) {
+        // Resolve divide by zero error with if statement
+        if (atBats == 0) return 0;
         return totalBases / atBats;
     }
     

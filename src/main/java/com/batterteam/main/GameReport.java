@@ -35,16 +35,13 @@ import java.util.ArrayList;
 public class GameReport {
 
     public static Scene getScene(Stage primaryStage, Scene mainMenuScene) {
-        Label titleLabel = new Label("📄 Game Report for Team");
+        Label titleLabel = new Label("📄 Game Report for Batters");
         titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
-
-        TextField teamField = new TextField();
-        teamField.setPromptText("Team Name");
 
         DatePicker gameDate = new DatePicker();
         gameDate.setPromptText("Select Date");
 
-        HBox inputBox = new HBox(10, teamField, gameDate);
+        HBox inputBox = new HBox(10, gameDate);
         inputBox.setAlignment(Pos.CENTER);
 
         TextArea reportArea = new TextArea();
@@ -69,14 +66,8 @@ public class GameReport {
         final StringBuilder lastReport = new StringBuilder();
 
         viewBtn.setOnAction(e -> {
-            String team = teamField.getText().trim().toLowerCase();
+
             LocalDate date = gameDate.getValue();
-
-            if (team.isEmpty() || date == null) {
-                showAlert("Please enter a team name and select a date.");
-                return;
-            }
-
             ArrayList<Batter> batters = BatterAppDB.buildBatterTeamObjectsFromDBSingleGame(date.toString());
 
             if (batters == null || batters.isEmpty()) {
@@ -85,28 +76,17 @@ public class GameReport {
             }
 
             StringBuilder sb = new StringBuilder();
-            sb.append("Game Report for ").append(team).append(" on ").append(date).append("\n\n");
+            sb.append("Game Report for a Baseball Game on ").append(date).append("\n\n");
             sb.append(String.format("%-14s%-14s%4s%4s%5s%8s%8s%8s%6s%5s\n",
                 "First Name", "Last Name", "AB", "H", "TB", "AVG", "SLG", "OBP", "RBI", "R"));
             sb.append("=".repeat(78)).append("\n");
 
-            boolean found = false;
-
             for (Batter b : batters) {
-                if (b.getTeam().equalsIgnoreCase(team)) {
-                    found = true;
                     sb.append(String.format("%-14s%-14s%4d%4d%5d%8.3f%8.3f%8.3f%6d%5d\n",
                         b.getPlayerFirstName(), b.getPlayerLastName(),
                         b.getAtBats(), b.getHits(), b.getTotalBases(),
                         b.getBattingAvg(), b.getSluggingAmount(), b.getOnBasePerc(),
                         b.getRBI(), b.getRuns()));
-                }
-            }
-
-
-            if (!found) {
-                reportArea.setText("No stats found for team '" + team + "' on " + date);
-                return;
             }
 
             lastReport.setLength(0);

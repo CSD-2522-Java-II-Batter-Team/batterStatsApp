@@ -2,7 +2,7 @@
  * Author Name: Batter Team
  * Date: 4/25/25
  * File Name: batterStatsApp.java
- * Last Update: Tiffany - 5/9/25
+ * Last Update: Seth I - 5/9/25
  * Program Description: Main file AND GUI for batterStatsApp.
  */
 
@@ -17,6 +17,7 @@ Seth I. - 5/7/25 - Resolving issue where report wasn't properly displaying to us
 Lillian H - 5/8/25 - Added data validation to controls
 Tiffany + Lillian - 5/8/25 - Improved look of GUI and removed unneccessary buttons
 Tiffany - 5/9/25 - Created GameReport.java and implemented within the GUI.
+Seth I. - 5/9/25 - Incorporated more data validation to ensure String values are consistent with database's expectations.
 
 ======================================
  */
@@ -339,7 +340,6 @@ public class batterStatsApp extends Application {
         cityField.setMaxSize(100, 100);
         
         atBatsField.setMaxSize(50, 50);
-        atBatsField.setAlignment(Pos.CENTER_RIGHT);
         runsField.setMaxSize(50, 50);
         hitsField.setMaxSize(50, 50);
         rbiField.setMaxSize(50, 50);
@@ -403,6 +403,7 @@ public class batterStatsApp extends Application {
             errorMsg += v.isInteger(leftOnBasesField.getText(), "Left on Bases");
             errorMsg += v.isInteger(stolenBasesField.getText(), "Stolen Bases");
             errorMsg += v.isInteger(homePlatesField.getText(), "Home Plates");
+                
 
             if (errorMsg.isEmpty()) {
                 // Batter and game variables
@@ -414,6 +415,14 @@ public class batterStatsApp extends Application {
                 String gameCity = formattedWord(cityField.getText());
                 String gameState = stateCombo.getSelectionModel().getSelectedItem(); 
 
+                // Force user entered strings to have a capital first letter and lowercase for remaining word (rule repeats with subsequent words)
+                // variables would be null if no info was received however this should be impossible due to error handling with alerts
+                firstName = v.capitalizeWords(firstName);
+                lastName = v.capitalizeWords(lastName);
+                batterTeam = v.capitalizeWords(batterTeam);
+                opponentTeam = v.capitalizeWords(opponentTeam);
+                gameCity = v.capitalizeWords(gameCity);              
+                
                 int atBats = Integer.parseInt(atBatsField.getText());
                 int runs = Integer.parseInt(runsField.getText());
                 int hits = Integer.parseInt(hitsField.getText());
@@ -465,10 +474,14 @@ public class batterStatsApp extends Application {
                     gameID = BatterAppDB.addGame(batterTeam, opponentTeam, formattedDateOfGame, batterTeam, gameCity, gameState);
                     BatterAppDB.addTeamPerGame(gameID, teamExistsBatterTeam, 1);
                     BatterAppDB.addTeamPerGame(gameID, teamExistsOppTeam, 0);
+                    BatterAppDB.addWinLose(batterTeam, true, false);
+                    BatterAppDB.addWinLose(opponentTeam, false, true);
                 } else {
                     gameID = BatterAppDB.addGame(batterTeam, opponentTeam, formattedDateOfGame, opponentTeam, gameCity, gameState);
                     BatterAppDB.addTeamPerGame(gameID, teamExistsBatterTeam, 0);
                     BatterAppDB.addTeamPerGame(gameID, teamExistsOppTeam, 1);
+                    BatterAppDB.addWinLose(batterTeam, false, true);
+                    BatterAppDB.addWinLose(opponentTeam, true, false);
                 }
                 
                 // add the batter's stats to the DB

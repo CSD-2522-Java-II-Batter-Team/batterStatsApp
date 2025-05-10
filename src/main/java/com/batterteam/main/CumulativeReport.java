@@ -10,6 +10,7 @@
 ============= CHANGE LOG =============
 Tiffany - 5/8/25 - Consolidated Scene from batterStatsApp into CumulativeReport
 Seth I - 5/9/25 - Added (then commented out) code around lines 151-161 for testing of a new report message.
+Seth I - 5/9/25 - Removed commented out code and then modified alert box for cumulative report to allow the user to scroll through longer reports.
 
 ======================================
  */
@@ -18,6 +19,7 @@ package com.batterteam.main;
 
 import com.batterteam.classes.Batter;
 import com.batterteam.classes.BatterAppDB;
+import com.batterteam.classes.Validation;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -120,6 +122,12 @@ public class CumulativeReport {
             String last = lastNameField.getText().trim();
             String teamName = teamNameField.getText().trim();
             
+            // Force user entered strings to have a capital first letter and lowercase for remaining word (rule repeats with subsequent words)
+            Validation v = new Validation();
+            first = v.capitalizeWords(first);
+            last = v.capitalizeWords(last);
+            teamName = v.capitalizeWords(teamName);
+            
             // Get teamID based on the user entered team name
             int teamID = BatterAppDB.getTeamIDFromTeamName(teamName);
 
@@ -130,6 +138,14 @@ public class CumulativeReport {
             } 
             if (teamName.isEmpty()) {
                 showAlert("Enter a team name.");
+                return;
+            }
+            if (!BatterAppDB.checkIfTeamExists(teamName)) {
+                showAlert("Team Not Found - Try a Different Team.");
+                return;
+            } 
+            if (!BatterAppDB.checkIfPlayerExists(first, last)){
+                showAlert("Player Not Found - Try a Different Player.");
                 return;
             }
 
@@ -152,15 +168,7 @@ public class CumulativeReport {
                     return;
                 }
 
-                message = Batter.batterAsString(searchedPlayer, date.toString());
-
-                // ==================== CODE FOR REPORT OF MULTIPLE BATTER IN A SINGLE GAME ======================
-                //// Create Array of all batters in a single game
-                //ArrayList batterTeam = BatterAppDB.buildBatterTeamObjectsFromDBSingleGame(date.toString());
-                //// Create report message
-                //message = Batter.battersTeamAsString(batterTeam, date.toString());
-                // ==================== CODE FOR REPORT OF MULTIPLE BATTER IN A SINGLE GAME ======================
-                
+                message = Batter.batterAsString(searchedPlayer, date.toString());                
                 printReport = message;
 
 
@@ -170,6 +178,10 @@ public class CumulativeReport {
                 LocalDate end = endDate.getValue();
                 if (start == null || end == null) {
                     showAlert("Select a start and end date.");
+                    return;
+                }
+                if (start.isAfter(end)) {
+                    showAlert("The start date must be before the end date.");
                     return;
                 }
 
@@ -184,12 +196,17 @@ public class CumulativeReport {
                 printReport = message;
 
             }
-
+            
             // Show the message in a popup window
-            Alert popup = new Alert(Alert.AlertType.INFORMATION);
-            popup.setTitle("Player Report");
+            Alert popup = new Alert(Alert.AlertType.NONE);
+            popup.setTitle("Player Report");         
+            TextArea txtArea =  new TextArea(message);
+            txtArea.setEditable(false);  
+            txtArea.setPrefWidth(400);
+            txtArea.setPrefHeight(350);
+            popup.getDialogPane().setContent(txtArea);
+            popup.getButtonTypes().addAll(ButtonType.OK);
             popup.setHeaderText(null);
-            popup.setContentText(message);
             popup.showAndWait();
         });
         

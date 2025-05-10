@@ -12,6 +12,7 @@
 5/04/25 - Seth I. - Added several methods to display, add, and update information from database. 
 5/06/25 - Seth I. - Added methods to retrieve gameIDs and dates
 5/09/25 - Seth I. - Repurposed unused code to now generate an ArrayList of Batters who played in a single team buildBatterTeamObjectsFromDBSingleGame
+5/09/25 - Seth I. - Added method to add losses and wins to the Teams table
 
 ======================================
  */
@@ -500,7 +501,7 @@ public class BatterAppDB {
         }
     }  
 
-        // Function updates database with player stats for a game based on a player's ID and a game's ID
+    // Function updates database with player stats for a game based on a player's ID and a game's ID
     public static void updateStats(int playerID, int gameID, String playerPosition, int atBatAmount, int runsAmount, int hitsAmount, int runsBattedInAmount, 
                                         int baseOnBallsAmount, int strikeOutAmount, int leftOnBaseAmount, int assistsAmount, int putOutAmount, int homeRunAmount,
                                             int hitByPitchAmount, int doubleAmount, int tripleAmount, int totalBasesAmount, int homePlateAmount, double onBasePercent,
@@ -654,6 +655,127 @@ public class BatterAppDB {
             System.out.println("checkIfGameExists " + e);            
         }
         return false;
+    }
+    
+    // Returns True or False if a team was or wasn't found in database
+    public static Boolean checkIfTeamExists(String teamName) {
+        try (PreparedStatement preparedStatement = connectToDB().prepareStatement("SELECT `teamName` FROM `Teams` WHERE `teamName` = ?")) {
+
+            // Create prepared statement searching for gameID based on date
+            preparedStatement.setString(1, teamName);
+
+            // Execute search query
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                // Process row of queried data until end of file - display as a black
+                if (resultSet.next() == false) return false;
+                else return true;             
+                
+            } catch (SQLException e) {
+                System.out.println("checkIfTeamExists " + e);
+            }
+        } catch (SQLException e) {
+            System.out.println("checkIfTeamExists " + e);            
+        }
+        return false;
+    }
+    
+    // Returns True or False if a player was or wasn't found in database
+    public static Boolean checkIfPlayerExists(String firstName, String lastName) {
+        try (PreparedStatement preparedStatement = connectToDB().prepareStatement("SELECT `playerFirstName`, `playerLastName` FROM `Players` WHERE `playerFirstName` = ? AND `playerLastName` = ?")) {
+
+            // Create prepared statement searching for gameID based on date
+            preparedStatement.setString(1, firstName);
+            preparedStatement.setString(2, lastName);
+
+            // Execute search query
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                // Process row of queried data until end of file - display as a black
+                if (resultSet.next() == false) return false;
+                else return true;             
+                
+            } catch (SQLException e) {
+                System.out.println("checkIfGameExists " + e);
+            }
+        } catch (SQLException e) {
+            System.out.println("checkIfGameExists " + e);            
+        }
+        return false;
+    }
+    
+    // Function adds a win or loss to Teams table
+    public static void addWinLose(String teamName, Boolean teamWon, Boolean teamLost) {
+        
+        String updateWinQuery = "UPDATE `Teams` SET `teamWins` = ? WHERE `teamName` = ?";
+        String updateLossesQuery = "UPDATE `Teams` SET `teamLosses` = ? WHERE `teamName` = ?";
+        String getPreviousWinsQuery = "SELECT teamWins FROM Teams WHERE teamName = ?;";
+        String getPreviousLossesQuery = "SELECT teamLosses FROM Teams WHERE teamName = ?;";
+        int previousWins = 0;
+        int previousLosses = 0;   
+        
+        if (teamWon) {       
+            // Locate the previous win count
+            try (PreparedStatement findWinsStatement = connectToDB().prepareStatement(getPreviousWinsQuery);) {
+                
+                findWinsStatement.setString(1, teamName);
+                try (ResultSet resultSet = findWinsStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        previousWins = resultSet.getInt(1);
+                    } else {
+                        System.out.println("Error: Could not retrieve previous wins.");
+                    }
+                } catch (SQLException e) {
+                    System.out.println("findWinsStatement " + e);
+                }
+        
+            } catch (SQLException e) {
+                System.out.println("findWinsStatement " + e);
+            }
+            
+            // Update the database with incremented value
+            try (PreparedStatement updateWinsStatement = connectToDB().prepareStatement(updateWinQuery);) {
+                
+                updateWinsStatement.setInt(1, (++previousWins));
+                updateWinsStatement.setString(2, teamName);
+                updateWinsStatement.executeUpdate();
+                
+            } catch (SQLException e) {
+                System.out.println("updateWinsStatement " + e);
+            }
+        } 
+        
+        if (teamLost) {       
+            // Locate the previous losses count
+            try (PreparedStatement findLossesStatement = connectToDB().prepareStatement(getPreviousLossesQuery);) {
+                
+                findLossesStatement.setString(1, teamName);
+                try (ResultSet resultSet = findLossesStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        previousLosses = resultSet.getInt(1);
+                    } else {
+                        System.out.println("Error: Could not retrieve previous losses.");
+                    }
+                } catch (SQLException e) {
+                    System.out.println("findLossesStatement " + e);
+                }
+        
+            } catch (SQLException e) {
+                System.out.println("findLossesStatement " + e);
+            }
+            
+            // Update the database with incremented value
+            try (PreparedStatement updateLossesStatement = connectToDB().prepareStatement(updateLossesQuery);) {
+                
+                updateLossesStatement.setInt(1, (++previousLosses));
+                updateLossesStatement.setString(2, teamName);
+                updateLossesStatement.executeUpdate();
+                
+            } catch (SQLException e) {
+                System.out.println("updateLossesStatement " + e);
+            }
+        } 
+
     }
 }
 
